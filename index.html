@@ -1,339 +1,539 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RP Security Patrol App</title>
-  <style>
-    /* Reset and base */
-    * {
-      box-sizing: border-box;
-    }
-    body, html {
-      margin: 0; padding: 0;
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background: #00796b;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #app {
-      background: #004d40;
-      padding: 2rem;
-      border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      position: relative;
-    }
-    h1 {
-      margin-top: 0;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.25rem;
-      font-weight: 600;
-    }
-    input, select, button, textarea {
-      width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      border: none;
-      font-size: 1rem;
-      font-family: inherit;
-    }
-    input {
-      outline: none;
-    }
-    button {
-      background: #26a69a;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #004d40;
-    }
-    #errorMessage {
-      color: #ffbaba;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 1rem;
-      display: none;
-    }
-    /* Modal styles */
-    #modalOverlay {
-      position: fixed;
-      top: 0; left: 0; right:0; bottom:0;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    #modal {
-      background: #004d40;
-      padding: 1.5rem;
-      border-radius: 12px;
-      width: 280px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      text-align: center;
-    }
-    #modal h2 {
-      margin-top: 0;
-    }
-    #modal button {
-      margin-top: 1rem;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VSS Patrol App</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #000;
+    color: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #app {
+    background: #111;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 360px;
+    min-height: 480px;
+    box-shadow: 0 0 15px #0af;
+    display: flex;
+    flex-direction: column;
+  }
+  h1, h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #0af;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  input, select, textarea, button {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: none;
+    font-size: 1rem;
+    background: #222;
+    color: #eee;
+    font-family: inherit;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: 2px solid #0af;
+  }
+  button {
+    cursor: pointer;
+    font-weight: 700;
+    background: #0af;
+    color: #000;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #08c;
+  }
+  #errorMessage {
+    color: #f44;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1rem;
+    display: none;
+  }
+  nav {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+  }
+  nav button {
+    flex: 1;
+    margin: 0 0.15rem;
+    font-weight: 600;
+    background: #222;
+    color: #0af;
+  }
+  nav button.active {
+    background: #0af;
+    color: #000;
+  }
+  #messageBoard {
+    background: #222;
+    border-radius: 6px;
+    padding: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  .message {
+    border-bottom: 1px solid #0af44a55;
+    padding: 0.3rem 0;
+  }
+  .message:last-child {
+    border-bottom: none;
+  }
+  .type-report {
+    color: #0af;
+  }
+  .type-alarm {
+    color: #f55;
+  }
+  .type-scan {
+    color: #5af;
+  }
+  .type-panic {
+    color: #fa0;
+    font-weight: 700;
+  }
+  #modalOverlay {
+    position: fixed;
+    top: 0; left: 0; right:0; bottom:0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #modal {
+    background: #111;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 320px;
+    box-shadow: 0 0 10px #0af;
+    color: #eee;
+  }
+  #modal h2 {
+    margin-top: 0;
+    color: #0af;
+  }
+  #modal button {
+    background: #0af;
+    color: #000;
+    font-weight: 700;
+    margin-top: 1rem;
+  }
+</style>
 </head>
 <body>
-  <div id="app" role="main" aria-label="RP Security Patrol App"></div>
+  <div id="app" role="main" aria-label="VSS Security Patrol App"></div>
 
   <div id="modalOverlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div id="modal">
-      <!-- Dynamic modal content -->
-    </div>
+    <div id="modal"></div>
   </div>
 
-  <script>
-    const app = document.getElementById('app');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modal = document.getElementById('modal');
+<script>
+  const app = document.getElementById('app');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
 
-    // Helper to get/set localStorage
-    function setStorage(key, val) {
-      localStorage.setItem(key, JSON.stringify(val));
-    }
-    function getStorage(key) {
-      const val = localStorage.getItem(key);
-      return val ? JSON.parse(val) : null;
-    }
-    function clearStorage() {
-      localStorage.clear();
+  // Local storage helpers
+  const storage = {
+    set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+    get: k => {
+      const v = localStorage.getItem(k);
+      return v ? JSON.parse(v) : null;
+    },
+    clear: () => localStorage.clear()
+  };
+
+  let logs = [];
+  let alarmTimeout = null;
+  let checkinTimeout = null;
+  let checkinResponseTimeout = null;
+
+  const alarmMsgs = [
+    "Door alarm triggered at North Wing",
+    "Motion detected near Loading Dock",
+    "Suspicious individual reported at Parking Lot",
+    "Fire alarm test in progress at Main Lobby",
+    "Equipment malfunction reported at Power Plant",
+    "Unauthorized access attempt at Server Room",
+    "Vehicle alarm activated at Gate 3",
+    "Security camera offline at East Corridor"
+  ];
+
+  const tags = {
+    outdoor: [
+      "North Gate",
+      "Loading Dock",
+      "Parking Lot",
+      "East Perimeter",
+      "West Fence"
+    ],
+    indoor: [
+      "Main Lobby",
+      "Server Room",
+      "Staff Entrance",
+      "Control Room",
+      "Storage Area"
+    ]
+  };
+
+  function showModal(html) {
+    modal.innerHTML = html;
+    modalOverlay.style.display = "flex";
+    const focusable = modal.querySelector('button, input, select, textarea');
+    if(focusable) focusable.focus();
+  }
+  function hideModal() {
+    modalOverlay.style.display = "none";
+  }
+
+  // LOGIN SCREEN
+  function showLogin() {
+    app.innerHTML = `
+      <h1>VSS Guard Login</h1>
+      <div id="errorMessage" role="alert" aria-live="assertive"></div>
+      <form id="loginForm" autocomplete="off">
+        <input id="username" name="username" type="text" placeholder="Enter guard name or ID" required aria-required="true" />
+        <button type="submit">Log In</button>
+      </form>
+    `;
+    const loginForm = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const errorMessage = document.getElementById('errorMessage');
+
+    loginForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const username = usernameInput.value.trim();
+      if(!username){
+        errorMessage.textContent = "Please enter your guard name or ID.";
+        errorMessage.style.display = "block";
+        return;
+      }
+      errorMessage.style.display = "none";
+      storage.set('guardUsername', username);
+      showMainMenu();
+    });
+  }
+
+  // MAIN MENU
+  function showMainMenu(){
+    const username = storage.get('guardUsername');
+    app.innerHTML = `
+      <h1>Welcome, ${username}</h1>
+      <form id="mainMenuForm" autocomplete="off">
+        <label for="locationSelect">Select Location:</label>
+        <select id="locationSelect" required aria-required="true" aria-label="Location selector">
+          <option value="" disabled selected>Choose a location</option>
+          <option value="P404">Vancouver General Hospital</option>
+          <option value="P306">Vancouver Power Plant</option>
+          <option value="P403">Family Jewels & Gadget Store</option>
+          <option value="P205">Toronto Dominion Bank</option>
+          <option value="P1110,P200,P602">Gas & Go Franchise (multiple locations)</option>
+          <option value="P217,P300">Three Guys Corporation (Restaurant & Warehouse)</option>
+          <option value="P307">Fortis BC Vancouver Gas Depot</option>
+          <option value="P308">Canada Post Corporation</option>
+          <option value="P904,P905,P906,P907">Lake View HOA</option>
+          <option value="P1104,P1105,P1107,P1108">Maple Street BIA</option>
+        </select>
+
+        <label for="patrolType">Select Patrol Type:</label>
+        <select id="patrolType" required aria-required="true" aria-label="Patrol type selector">
+          <option value="" disabled selected>Choose patrol type</option>
+          <option value="outdoor">Outdoor Patrol</option>
+          <option value="indoor">Indoor Patrol</option>
+        </select>
+
+        <button type="submit">Start Patrol</button>
+      </form>
+      <button id="logoutBtn" style="background:#b22222;">Log Out</button>
+    `;
+
+    document.getElementById('mainMenuForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const location = document.getElementById('locationSelect').value;
+      const patrolType = document.getElementById('patrolType').value;
+      if(!location || !patrolType){
+        alert('Please select both location and patrol type.');
+        return;
+      }
+      storage.set('selectedLocation', location);
+      storage.set('selectedPatrolType', patrolType);
+      logs = [];
+      showPatrolApp(location, patrolType);
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      storage.clear();
+      logs = [];
+      clearTimeout(alarmTimeout);
+      clearTimeout(checkinTimeout);
+      clearTimeout(checkinResponseTimeout);
+      showLogin();
+    });
+  }
+
+  // PATROL APP
+  function showPatrolApp(location, patrolType){
+    app.innerHTML = `
+      <h1>VSS Patrol - ${location} (${patrolType})</h1>
+      <nav>
+        <button id="tabPatrol" class="active" aria-selected="true">Patrol</button>
+        <button id="tabReport" aria-selected="false">Report</button>
+        <button id="tabMessages" aria-selected="false">Message Board</button>
+        <button id="panicBtn" style="background:#b22222; color:#fff;">Panic</button>
+      </nav>
+      <div id="tabContent" style="flex-grow:1; overflow-y:auto;"></div>
+      <div style="margin-top: 1rem; display:flex; justify-content:space-between;">
+        <button id="backBtn">Back</button>
+        <button id="homeBtn">Home</button>
+      </div>
+    `;
+
+    // Cached DOM
+    const tabContent = document.getElementById('tabContent');
+    const tabPatrol = document.getElementById('tabPatrol');
+    const tabReport = document.getElementById('tabReport');
+    const tabMessages = document.getElementById('tabMessages');
+    const panicBtn = document.getElementById('panicBtn');
+    const backBtn = document.getElementById('backBtn');
+    const homeBtn = document.getElementById('homeBtn');
+
+    // Helper: activate tabs
+    function activateTab(tabName){
+      [tabPatrol, tabReport, tabMessages].forEach(btn => {
+        const active = btn.id === 'tab' + tabName;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active);
+      });
+      if(tabName === 'Patrol') showPatrolTab();
+      else if(tabName === 'Report') showReportTab();
+      else if(tabName === 'Messages') showMessagesTab();
     }
 
-    // --- Login Screen ---
-    function showLogin() {
-      app.innerHTML = `
-        <h1>Guard Login</h1>
-        <div id="errorMessage" role="alert" aria-live="assertive"></div>
-        <form id="loginForm" autocomplete="off">
-          <input id="username" name="username" type="text" placeholder="Enter guard name or ID" required aria-required="true" />
-          <button type="submit">Log In</button>
-        </form>
+    // Patrol tab content (scan tags)
+    function showPatrolTab(){
+      const currentTags = tags[patrolType] || [];
+      tabContent.innerHTML = `
+        <h2>Scan Patrol Tags</h2>
+        <p>Select a tag to simulate NFC scanning.</p>
+        <select id="tagSelect" aria-label="Select a patrol tag">
+          <option value="" disabled selected>Choose tag</option>
+          ${currentTags.map(t => `<option value="${t}">${t}</option>`).join('')}
+        </select>
+        <button id="scanBtn">Scan Tag</button>
+        <div id="scanResult" style="margin-top: 1rem; color: #0af;"></div>
       `;
 
-      const loginForm = document.getElementById('loginForm');
-      const usernameInput = document.getElementById('username');
-      const errorMessage = document.getElementById('errorMessage');
-
-      loginForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const username = usernameInput.value.trim();
-        if (!username) {
-          errorMessage.textContent = "Please enter your guard name or ID.";
-          errorMessage.style.display = 'block';
+      document.getElementById('scanBtn').onclick = () => {
+        const tag = document.getElementById('tagSelect').value;
+        if(!tag){
+          alert('Please select a tag to scan.');
           return;
         }
-        errorMessage.style.display = 'none';
-        // Simulate delay
-        setTimeout(() => {
-          setStorage('guardUsername', username);
-          showMainMenu();
-        }, 600);
-      });
+        const time = new Date().toLocaleTimeString();
+        const msg = `Tag scanned: ${tag} at ${time}`;
+        logs.push({type:'scan', time: Date.now(), text: msg});
+        document.getElementById('scanResult').textContent = msg;
+      };
     }
 
-    // --- Main Menu ---
-    function showMainMenu() {
-      const username = getStorage('guardUsername');
-      app.innerHTML = `
-        <h1>Welcome, ${username}</h1>
-        <form id="mainMenuForm" autocomplete="off">
-          <label for="locationSelect">Select Location:</label>
-          <select id="locationSelect" required aria-required="true" aria-label="Location selector">
-            <option value="" disabled selected>Choose a location</option>
-            <option value="P404">Vancouver General Hospital</option>
-            <option value="P306">Vancouver Power Plant</option>
-            <option value="P403">Family Jewels & Gadget Store</option>
-            <option value="P205">Toronto Dominion Bank</option>
-            <option value="P1110,P200,P602">Gas & Go Franchise (multiple locations)</option>
-            <option value="P217,P300">Three Guys Corporation (Restaurant & Warehouse)</option>
-            <option value="P307">Fortis BC Vancouver Gas Depot</option>
-            <option value="P308">Canada Post Corporation</option>
-            <option value="P904,P905,P906,P907">Lake View HOA</option>
-            <option value="P1104,P1105,P1107,P1108">Maple Street BIA</option>
+    // Report tab content (generic form)
+    function showReportTab(){
+      tabContent.innerHTML = `
+        <h2>Submit Report</h2>
+        <form id="reportForm">
+          <label for="reportType">Report Type</label>
+          <select id="reportType" required aria-required="true">
+            <option value="" disabled selected>Select report type</option>
+            <option value="incident">Incident</option>
+            <option value="hazard">Hazard</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="other">Other</option>
           </select>
-
-          <label for="patrolType">Select Patrol Type:</label>
-          <select id="patrolType" required aria-required="true" aria-label="Patrol type selector">
-            <option value="" disabled selected>Choose patrol type</option>
-            <option value="outdoor">Outdoor Patrol</option>
-            <option value="indoor">Indoor Patrol</option>
-          </select>
-
-          <button type="submit">Start Patrol</button>
+          <label for="reportLocation">Location (optional)</label>
+          <input id="reportLocation" type="text" placeholder="Where?" />
+          <label for="reportDetails">Details</label>
+          <textarea id="reportDetails" rows="4" required aria-required="true" placeholder="Describe the issue..."></textarea>
+          <button type="submit">Submit Report</button>
         </form>
-        <button id="logoutBtn" style="background:#c62828; margin-top:1rem;">Log Out</button>
+        <div id="reportMsg" style="color:#0af; font-weight:600; margin-top:0.5rem;"></div>
       `;
 
-      document.getElementById('mainMenuForm').addEventListener('submit', e => {
+      const form = document.getElementById('reportForm');
+      const reportMsg = document.getElementById('reportMsg');
+      form.addEventListener('submit', e => {
         e.preventDefault();
-        const location = document.getElementById('locationSelect').value;
-        const patrolType = document.getElementById('patrolType').value;
-        if (!location || !patrolType) {
-          alert('Please select both location and patrol type.');
+        const type = document.getElementById('reportType').value;
+        const loc = document.getElementById('reportLocation').value.trim();
+        const details = document.getElementById('reportDetails').value.trim();
+        if(!type || !details){
+          alert('Please fill in report type and details.');
           return;
         }
-        setStorage('selectedLocation', location);
-        setStorage('selectedPatrolType', patrolType);
-        showPatrolScreen(location, patrolType);
-      });
-
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        clearStorage();
-        showLogin();
+        const time = new Date().toLocaleTimeString();
+        let text = `Report [${type}] at ${time}`;
+        if(loc) text += `, Location: ${loc}`;
+        text += ` - ${details}`;
+        logs.push({type:'report', time: Date.now(), text});
+        reportMsg.textContent = 'Report submitted.';
+        form.reset();
       });
     }
 
-    // --- Patrol Screen ---
-    let alarmTimeoutId = null;
-    let reportLog = [];
+    // Message board tab
+    function showMessagesTab(){
+      if(logs.length === 0){
+        tabContent.innerHTML = `<h2>Message Board</h2><p>No messages yet.</p>`;
+        return;
+      }
+      const msgsHtml = logs
+        .sort((a,b) => b.time - a.time)
+        .map(log => {
+          const d = new Date(log.time);
+          const timeStr = d.toLocaleTimeString();
+          let cls = "";
+          if(log.type === 'alarm') cls = "type-alarm";
+          else if(log.type === 'report') cls = "type-report";
+          else if(log.type === 'scan') cls = "type-scan";
+          else if(log.type === 'panic') cls = "type-panic";
+          return `<div class="message ${cls}"><strong>[${log.type.toUpperCase()}]</strong> ${timeStr} - ${log.text}</div>`;
+        }).join('');
+      tabContent.innerHTML = `<h2>Message Board</h2><div id="messageBoard">${msgsHtml}</div>`;
+    }
 
-    const alarmMessages = [
-      "Door alarm triggered at North Wing",
-      "Motion detected near Loading Dock",
-      "Suspicious individual reported at Parking Lot",
-      "Fire alarm test in progress at Main Lobby",
-      "Equipment malfunction reported at Power Plant",
-      "Unauthorized access attempt at Server Room",
-      "Vehicle alarm activated at Gate 3",
-      "Security camera offline at East Corridor",
-    ];
+    // Panic alert
+    function triggerPanic(){
+      const time = new Date().toLocaleTimeString();
+      const panicMsg = `PANIC ALERT triggered by guard at ${time}!`;
+      logs.push({type:'panic', time: Date.now(), text: panicMsg});
+      showModal(`
+        <h2 id="modalTitle">PANIC ALERT!</h2>
+        <p style="color:#f00; font-weight:bold;">${panicMsg}</p>
+        <button id="panicCloseBtn">Dismiss</button>
+      `);
+      document.getElementById('panicCloseBtn').onclick = () => {
+        hideModal();
+      };
+      activateTab('Messages');
+    }
 
-    function scheduleNextAlarm() {
-      // Random interval between 3 to 7 minutes (in ms)
+    // Random alarms every 3-7 mins
+    function scheduleAlarm(){
+      clearTimeout(alarmTimeout);
       const interval = (3 + Math.random() * 4) * 60 * 1000;
-      alarmTimeoutId = setTimeout(() => {
-        showAlarmPopup();
-        scheduleNextAlarm();
+      alarmTimeout = setTimeout(() => {
+        const msg = alarmMsgs[Math.floor(Math.random() * alarmMsgs.length)];
+        const time = new Date().toLocaleTimeString();
+        const alarmText = `${msg} (${time})`;
+        logs.push({type:'alarm', time: Date.now(), text: alarmText});
+        showModal(`
+          <h2 id="modalTitle">ALARM ALERT</h2>
+          <p>${msg}</p>
+          <button id="ackAlarmBtn">Acknowledge</button>
+        `);
+        document.getElementById('ackAlarmBtn').onclick = () => {
+          hideModal();
+          scheduleAlarm();
+          activateTab('Messages');
+        };
       }, interval);
     }
 
-    function showAlarmPopup() {
-      const msg = alarmMessages[Math.floor(Math.random() * alarmMessages.length)];
-      showModal(`
-        <h2 id="modalTitle">ALERT</h2>
-        <p>${msg}</p>
-        <button id="ackAlarmBtn">Acknowledge</button>
-      `);
-
-      document.getElementById('ackAlarmBtn').addEventListener('click', () => {
-        hideModal();
-      });
+    // Guard check-in prompt every 5 minutes
+    function scheduleCheckin(){
+      clearTimeout(checkinTimeout);
+      clearTimeout(checkinResponseTimeout);
+      checkinTimeout = setTimeout(() => {
+        showModal(`
+          <h2 id="modalTitle">Check-In</h2>
+          <p>Are you okay? Please confirm within 1 minute.</p>
+          <button id="checkinYesBtn">I'm OK</button>
+        `);
+        let responded = false;
+        document.getElementById('checkinYesBtn').onclick = () => {
+          responded = true;
+          hideModal();
+          const time = new Date().toLocaleTimeString();
+          logs.push({type:'scan', time: Date.now(), text: `Guard confirmed OK at ${time}.`});
+          scheduleCheckin();
+        };
+        // After 1 minute no response => trigger silent panic
+        checkinResponseTimeout = setTimeout(() => {
+          if(!responded){
+            hideModal();
+            const time = new Date().toLocaleTimeString();
+            const alertMsg = `No response to check-in at ${time}, alerting other guards.`;
+            logs.push({type:'panic', time: Date.now(), text: alertMsg});
+            activateTab('Messages');
+            // Optional: Show a subtle toast or notification that alert sent
+          }
+          scheduleCheckin();
+        }, 60000); // 60 seconds
+      }, 5 * 60 * 1000); // every 5 minutes
     }
 
-    function showModal(htmlContent) {
-      modal.innerHTML = htmlContent;
-      modalOverlay.style.display = 'flex';
-      // Focus first button or input
-      const focusable = modal.querySelector('button, input, select, textarea');
-      if (focusable) focusable.focus();
-    }
-
-    function hideModal() {
-      modalOverlay.style.display = 'none';
-    }
-
-    // Report form HTML
-    function showReportForm() {
-      showModal(`
-        <h2 id="modalTitle">Report to City</h2>
-        <form id="reportForm">
-          <label for="reportType">Type of Report:</label>
-          <select id="reportType" required aria-required="true">
-            <option value="" disabled selected>Select a report type</option>
-            <option value="vandalism">Vandalism</option>
-            <option value="hazard">Hazard</option>
-            <option value="suspicious">Suspicious Activity</option>
-            <option value="other">Other</option>
-          </select>
-          <label for="reportDetails">Details:</label>
-          <textarea id="reportDetails" rows="4" placeholder="Describe the incident..." required aria-required="true"></textarea>
-          <button type="submit">Submit Report</button>
-          <button type="button" id="cancelReportBtn" style="background:#c62828; margin-top:0.5rem;">Cancel</button>
-        </form>
-      `);
-
-      const reportForm = document.getElementById('reportForm');
-      reportForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const type = document.getElementById('reportType').value;
-        const details = document.getElementById('reportDetails').value.trim();
-        if (!type || !details) {
-          alert('Please fill in all fields.');
-          return;
-        }
-        // Log report locally
-        reportLog.push({
-          time: new Date().toISOString(),
-          type,
-          details,
-        });
-        alert('Report submitted successfully.');
-        hideModal();
-      });
-
-      document.getElementById('cancelReportBtn').addEventListener('click', () => {
-        hideModal();
-      });
-    }
-
-    function showPatrolScreen(location, patrolType) {
-      app.innerHTML = `
-        <h1>Patrol at ${location} (${patrolType})</h1>
-        <p>Patrol features coming soon!</p>
-        <button id="reportBtn">Report to City</button>
-        <button id="backBtn" style="margin-top: 1rem;">Back to Menu</button>
-        <button id="logoutBtn" style="background:#c62828; margin-top: 1rem;">Log Out</button>
-      `;
-
-      // Start scheduling alarms
-      if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
-      scheduleNextAlarm();
-
-      document.getElementById('reportBtn').addEventListener('click', () => {
-        showReportForm();
-      });
-
-      document.getElementById('backBtn').addEventListener('click', () => {
-        if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
-        showMainMenu();
-      });
-
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
-        clearStorage();
-        showLogin();
-      });
-    }
-
-    // --- Initial load ---
-    window.onload = () => {
-      const username = getStorage('guardUsername');
-      if (username) {
-        showMainMenu();
-      } else {
-        showLogin();
-      }
+    // Navigation event handlers
+    tabPatrol.onclick = () => activateTab('Patrol');
+    tabReport.onclick = () => activateTab('Report');
+    tabMessages.onclick = () => activateTab('Messages');
+    panicBtn.onclick = () => triggerPanic();
+    backBtn.onclick = () => {
+      clearTimeout(alarmTimeout);
+      clearTimeout(checkinTimeout);
+      clearTimeout(checkinResponseTimeout);
+      logs = [];
+      showMainMenu();
     };
-  </script>
+    homeBtn.onclick = () => {
+      clearTimeout(alarmTimeout);
+      clearTimeout(checkinTimeout);
+      clearTimeout(checkinResponseTimeout);
+      logs = [];
+      showLogin();
+    };
+
+    // Start everything
+    scheduleAlarm();
+    scheduleCheckin();
+    activateTab('Patrol');
+  }
+
+  // Start the app
+  (function init(){
+    if(storage.get('guardUsername')){
+      const loc = storage.get('selectedLocation');
+      const patrolType = storage.get('selectedPatrolType');
+      if(loc && patrolType){
+        showPatrolApp(loc, patrolType);
+      } else {
+        showMainMenu();
+      }
+    } else {
+      showLogin();
+    }
+  })();
+
+</script>
 </body>
 </html>
