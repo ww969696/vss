@@ -1,455 +1,817 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>VSS Patrol App</title>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="firebase-config.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background-color: #f2f2f2;
-      color: #222;
-      user-select: none;
-    }
-
-    .status-bar {
-      background-color: #e0e0e0;
-      color: #333;
-      padding: 4px 10px;
-      font-size: 12px;
-      display: flex;
-      justify-content: space-between;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .app-bar {
-      background-color: #f9f9f9;
-      padding: 10px;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .nav-bar {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: #eaeaea;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      border-top: 1px solid #ccc;
-    }
-
-    .nav-bar button {
-      background: none;
-      border: none;
-      color: #333;
-      font-size: 18px;
-    }
-
-    .content {
-      padding: 15px;
-      padding-bottom: 70px;
-    }
-
-    button {
-      background-color: #ddd;
-      border: 1px solid #bbb;
-      padding: 10px 14px;
-      border-radius: 6px;
-      color: #222;
-      font-size: 15px;
-      margin: 8px 0;
-      width: 100%;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      margin-bottom: 12px;
-      border-radius: 4px;
-      border: 1px solid #bbb;
-      background-color: #fff;
-      color: #111;
-      font-size: 14px;
-    }
-
-    .entry {
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #ffffff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .entry .ts {
-      font-size: 11px;
-      color: #777;
-      margin-top: 4px;
-    }
-
-    .notify {
-      background-color: #ffecb3;
-      color: #111;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .panic-banner {
-      background-color: red;
-      color: white;
-      text-align: center;
-      padding: 6px;
-      font-weight: bold;
-      display: none;
-    }
-
-    .overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-color: rgba(255, 0, 0, 0.4);
-      z-index: 1000;
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VSS Patrol App</title>
+<style>
+  @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%; background: #f0f0f0; font-family: 'Roboto', sans-serif; color: #222;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    user-select: none;
+  }
+  #device {
+    width: 360px;
+    height: 640px;
+    border: 2px solid #aaa;
+    border-radius: 16px;
+    margin: 20px auto;
+    position: relative;
+    overflow: hidden;
+    background: #e6e6e6;
+    box-shadow:
+      inset 0 0 10px #bbb,
+      0 10px 30px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+  }
+  .status-bar {
+    height: 24px;
+    background: #222;
+    color: #ccc;
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    text-shadow: 0 1px 0 #000;
+    font-weight: 500;
+    font-family: monospace;
+  }
+  #screen {
+    flex: 1;
+    overflow-y: auto;
+    background: #fff;
+    color: #222;
+    padding: 10px 16px 16px;
+    box-shadow: inset 0 1px 4px #ccc;
+  }
+  .nav-bar {
+    height: 56px;
+    background: #222;
+    display: flex;
+    box-shadow: inset 0 1px 0 #444;
+  }
+  .nav-bar button {
+    flex: 1;
+    border: none;
+    background: #222;
+    color: #ccc;
+    font-size: 24px;
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+    font-weight: 700;
+  }
+  .nav-bar button:active {
+    background: #555;
+    color: #eee;
+  }
+  .app-bar {
+    background: #3a5998;
+    padding: 12px 16px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+    text-shadow: 0 1px 2px #000a;
+    letter-spacing: 0.03em;
+    box-shadow: inset 0 -2px 4px #2c4674;
+    user-select: none;
+  }
+  .content {
+    margin-top: 10px;
+  }
+  .home-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  .app-icon {
+    background: #fafafa;
+    border: 1px solid #999;
+    border-radius: 14px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 16px;
+    box-shadow: 0 1px 4px #bbb;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+  .app-icon:hover,
+  .app-icon:focus {
+    background: #d9e3f0;
+    outline: none;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    margin: 8px 0 12px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1.5px solid #aaa;
+    outline: none;
+    transition: border-color 0.3s ease;
+    color: #111;
+    background: #fff;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #3a5998;
+    box-shadow: 0 0 8px #3a5998aa;
+  }
+  button {
+    background: #3a5998;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 3px 8px #30518c;
+    user-select: none;
+  }
+  button:disabled {
+    background: #888;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  button:active:not(:disabled) {
+    background: #2a3f6d;
+  }
+  .notify {
+    background: #ffeb3b;
+    color: #111;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 0 6px #c1b702;
+    user-select: none;
+  }
+  .message-board .entry {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #222;
+    box-shadow: 0 1px 5px #bbb;
+  }
+  .message-board .entry strong {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #3a5998;
+  }
+  .message-board .entry .ts {
+    opacity: 0.6;
+    font-size: 11px;
+    margin-top: 6px;
+    font-family: monospace;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  /* Modal overlay and content */
+  #modalOverlay {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    user-select: none;
+  }
+  #modal {
+    background: #fff;
+    color: #222;
+    padding: 20px 24px;
+    max-width: 320px;
+    width: 90vw;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    font-size: 15px;
+    user-select: text;
+  }
+  #modal p {
+    margin: 0 0 16px 0;
+  }
+  #modal input[type="text"] {
+    width: 100%;
+    margin-bottom: 16px;
+  }
+  #modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  #modal-buttons button {
+    min-width: 70px;
+  }
+  /* Scrollbar style */
+  #screen::-webkit-scrollbar {
+    width: 8px;
+  }
+  #screen::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+  }
+  #screen::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+  }
+</style>
 </head>
 <body>
-  <div class="status-bar">
-    <span id="time">--:--</span>
-    <span>🔋 75%</span>
+  <div id="device" role="main" aria-label="VSS Patrol App">
+    <div class="status-bar" aria-live="polite" aria-atomic="true" aria-relevant="text">
+      <div class="left" id="statusTime">--:--</div>
+      <div class="right">🔋 85%</div>
+    </div>
+    <div id="screen"><div id="app" tabindex="0"></div></div>
+    <div class="nav-bar" role="navigation" aria-label="Navigation Buttons">
+      <button id="btnBack" aria-label="Back">◀</button>
+      <button id="btnHome" aria-label="Home">⏺</button>
+      <button id="btnMenu" aria-label="Menu">☰</button>
+    </div>
   </div>
 
-  <div id="panicBanner" class="panic-banner">🚨 GUARD IN PANIC MODE — ACTION REQUIRED</div>
-  <div id="app" class="content">Loading...</div>
-
-  <div class="nav-bar">
-    <button id="btnBack">◀</button>
-    <button id="btnHome">🏠</button>
-    <button id="btnMenu">☰</button>
+  <!-- Modal elements -->
+  <div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+    <div id="modal">
+      <p id="modalDesc"></p>
+      <input type="text" id="modalInput" style="display:none" autocomplete="off" />
+      <div id="modal-buttons">
+        <button id="modalCancelBtn">Cancel</button>
+        <button id="modalOkBtn">OK</button>
+      </div>
+    </div>
   </div>
 
-  <div class="overlay" id="flashOverlay"></div>
-  <script>
-  // Firebase refs are loaded via firebase-config.js
-  let currentUser = "";
-  let currentStatus = "Active";
-  let currentScreen = "login";
-  let screenStack = [];
-
-  const app = document.getElementById("app");
-  const panicBanner = document.getElementById("panicBanner");
-  const flashOverlay = document.getElementById("flashOverlay");
-
-  // Update clock every second
-  setInterval(() => {
-    document.getElementById("time").innerText = new Date().toLocaleTimeString();
-  }, 1000);
-
-  // Navigation
-  function showScreen(html) {
-    app.innerHTML = html;
-  }
-
-  function goHome() {
-    screenStack = [];
-    homeScreen();
-  }
-
-  function goBack() {
-    if (screenStack.length > 0) {
-      const prev = screenStack.pop();
-      prev();
-    }
-  }
-
-  function pushScreen(fn) {
-    screenStack.push(fn);
-  }
-
-  document.getElementById("btnHome").onclick = goHome;
-  document.getElementById("btnBack").onclick = goBack;
-  document.getElementById("btnMenu").onclick = goHome;
-
-  // Login
-  function loginScreen() {
-    showScreen(`
-      <h2>Welcome to VSS</h2>
-      <p>Enter your name:</p>
-      <input id="loginName" placeholder="Guard Name" />
-      <button onclick="handleLogin()">Login</button>
-    `);
-  }
-
-  function handleLogin() {
-    const name = document.getElementById("loginName").value.trim();
-    if (!name) return inAppNotify("Please enter a name.");
-    currentUser = name;
-    guardsRef.child(name).set({
-      status: "Active",
-      lastSeen: now(),
-      location: "Logged In"
-    });
-    homeScreen();
-  }
-
-  function now() {
-    return new Date().toLocaleString();
-  }
-
-  function homeScreen() {
-    currentScreen = "home";
-    showScreen(`
-      <h2>Main Menu</h2>
-      <button onclick="patrolScreen()">🚶 Patrol</button>
-      <button onclick="reportScreen()">📝 Submit Report</button>
-      <button onclick="messageScreen()">📋 Message Board</button>
-      <button onclick="triggerPanic()">🚨 Panic</button>
-      <button onclick="statusScreen()">🧍 Set Status</button>
-    `);
-  }
-</script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  function patrolScreen() {
-    pushScreen(homeScreen);
-    showScreen(`
-      <h3>Patrol</h3>
-      <label>Location:</label>
-      <select id="site">
-        <option value="VGH">Vancouver General Hospital</option>
-        <option value="PowerPlant">Vancouver Power Plant</option>
-        <option value="FamilyJewels">Family Jewels Outlet</option>
-        <option value="TD">TD Bank</option>
-        <option value="GasGo">Gas & Go</option>
-        <option value="ThreeGuys">Three Guys Corp</option>
-        <option value="Fortis">Fortis Gas Depot</option>
-        <option value="CanadaPost">Canada Post</option>
-        <option value="LakeHOA">Lake View HOA</option>
-        <option value="MapleBIA">Maple Street BIA</option>
-      </select>
-      <label>Route:</label>
-      <select id="route">
-        <option value="Outdoor">Outdoor</option>
-        <option value="Indoor">Indoor</option>
-      </select>
-      <button onclick="scanTag()">📍 Scan Tag</button>
-    `);
-  }
+  // Your Firebase config here (replace with your config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyQWxW-3gsvN7zI4YYIVw1sUVOreBCdbc",
+    authDomain: "project-be13b.firebaseapp.com",
+    databaseURL: "https://project-be13b-default-rtdb.firebaseio.com",
+    projectId: "project-be13b",
+    storageBucket: "project-be13b.firebasestorage.app",
+    messagingSenderId: "724859412186",
+    appId: "1:724859412186:web:2a5ef9d65d7c307c870fe3"
+  };
 
-  function scanTag() {
-    const site = document.getElementById("site").value;
-    const route = document.getElementById("route").value;
-    const tag = prompt("Enter tag number (1-10)");
-    if (!tag) return;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const logsRef = db.ref("logs");
+  const guardsRef = db.ref("guards");
 
-    const entry = {
-      type: "scan",
-      user: currentUser,
-      site,
-      route,
-      tag,
-      time: now()
-    };
-    logsRef.push(entry);
-    inAppNotify("✅ Tag scanned: " + tag);
-  }
+  // UI Elements
+  const appEl = document.getElementById('app');
+  const btnBack = document.getElementById('btnBack');
+  const btnHome = document.getElementById('btnHome');
+  const btnMenu = document.getElementById('btnMenu');
+  const statusTime = document.getElementById('statusTime');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('modal');
+  const modalDesc = document.getElementById('modalDesc');
+  const modalInput = document.getElementById('modalInput');
+  const modalCancelBtn = document.getElementById('modalCancelBtn');
+  const modalOkBtn = document.getElementById('modalOkBtn');
 
-  function reportScreen() {
-    pushScreen(homeScreen);
-    showScreen(`
-      <h3>Submit Report</h3>
-      <label>Type:</label>
-      <select id="reportType">
-        <option value="Hazard">Hazard</option>
-        <option value="Incident">Incident</option>
-        <option value="Maintenance">Maintenance</option>
-        <option value="Other">Other</option>
-      </select>
-      <label>Description:</label>
-      <textarea id="reportDesc" rows="4" placeholder="What happened?"></textarea>
-      <button onclick="submitReport()">Submit</button>
-    `);
-  }
-
-  function submitReport() {
-    const type = document.getElementById("reportType").value;
-    const desc = document.getElementById("reportDesc").value.trim();
-    if (!desc) return inAppNotify("Please provide a description.");
-    const entry = {
-      type: "report",
-      user: currentUser,
-      reportType: type,
-      description: desc,
-      time: now()
-    };
-    logsRef.push(entry);
-    inAppNotify("📋 Report submitted.");
-    goHome();
-  }
-
-  function messageScreen() {
-    pushScreen(homeScreen);
-    logsRef.once("value", snap => {
-      let html = `<h3>Message Board</h3>`;
-      const entries = snap.val();
-      for (let key in entries) {
-        const e = entries[key];
-        html += `<div class="entry">
-          <strong>${e.user}</strong>: ${
-            e.type === "scan" ? `scanned Tag ${e.tag} at ${e.site} (${e.route})` :
-            e.type === "report" ? `submitted a ${e.reportType} report: "${e.description}"` :
-            e.type === "panic" ? `🚨 PANIC issued from ${e.location}` :
-            e.type === "checkin" ? `✅ Responded to check-in` :
-            e.type === "alarm" ? `🔔 ${e.description}` : "Unknown"
-          }
-          <div class="ts">${e.time}</div>
-        </div>`;
-      }
-      showScreen(html);
-    });
-  }
-
-  function triggerPanic() {
-    const location = prompt("Enter your current location:");
-    flashOverlay.style.display = "block";
-    setTimeout(() => flashOverlay.style.display = "none", 1500);
-
-    const entry = {
-      type: "panic",
-      user: currentUser,
-      location,
-      time: now()
-    };
-    logsRef.push(entry);
-    guardsRef.child(currentUser).update({ status: "Panic", lastSeen: now(), location });
-    panicBanner.style.display = "block";
-    inAppNotify("🚨 Panic alert sent.");
-  }
-
-  function statusScreen() {
-    pushScreen(homeScreen);
-    showScreen(`
-      <h3>Set Status</h3>
-      <select id="statusSelect">
-        <option value="Active">Active</option>
-        <option value="Armoured Transport">Armoured Transport</option>
-        <option value="Break">Break</option>
-      </select>
-      <label>Location:</label>
-      <input id="statusLoc" placeholder="Where are you?" />
-      <button onclick="updateStatus()">Update</button>
-    `);
-  }
-
-  function updateStatus() {
-    const status = document.getElementById("statusSelect").value;
-    const location = document.getElementById("statusLoc").value.trim();
-    currentStatus = status;
-    guardsRef.child(currentUser).update({
-      status,
-      lastSeen: now(),
-      location
-    });
-    if (status !== "Panic") panicBanner.style.display = "none";
-    inAppNotify("✅ Status updated.");
-    goHome();
-  }
-</script>
-  <script>
-  // Random simulated alarms
-  const simulatedAlarms = [
-    "Suspicious customer near entrance.",
-    "Residential alarm at loading dock.",
-    "Loitering near fence line.",
-    "Loud noise reported in stairwell.",
-    "Unauthorized person in restricted zone."
+  // Constants
+  const CONTRACT_SITES = [
+    {name: "Vancouver General Hospital", code:"VGH"},
+    {name: "Vancouver Power Plant", code:"Power Plant"},
+    {name: "Family Jewels & Gadget Store", code:"FJGS"},
+    {name: "Toronto Dominion Bank", code:"TDB"},
+    {name: "Gas & Go Franchises", code:"Gas & Go"},
+    {name: "Three Guys Corporation", code:"Three Guys"},
+    {name: "Fortis BC Gas Depot", code:"Fortis BC"},
+    {name: "Canada Post Corporation", code:"Canada Post"},
+    {name: "Lake View HOA", code:"HOA"},
+    {name: "Maple Street BIA", code:"BIA"}
   ];
 
-  function simulateAlarm() {
-    const msg = simulatedAlarms[Math.floor(Math.random() * simulatedAlarms.length)];
-    const entry = {
-      type: "alarm",
-      user: "System",
-      description: msg,
-      time: now()
-    };
-    logsRef.push(entry);
-    inAppNotify("🔔 " + msg);
-  }
+  const PATROL_TYPES = ['Outdoor', 'Indoor'];
 
-  // Check-in system
-  const checkInInterval = 5 * 60 * 1000; // 5 min
-
-  function startCheckInCycle() {
-    setInterval(() => {
-      if (currentStatus === "Panic") return; // skip if panicking
-      const checkTime = Date.now();
-      const promptId = "check_" + checkTime;
-
-      inAppNotify("Check-in required.", "✅ Check In", () => {
-        const entry = {
-          type: "checkin",
-          user: currentUser,
-          time: now()
-        };
-        logsRef.push(entry);
-      });
-
-      setTimeout(() => {
-        if (currentStatus !== "Panic") {
-          triggerPanic();
-        }
-      }, 60000); // escalate after 1 min if unacknowledged
-    }, checkInInterval);
-  }
-
-  // Reset via URL
-  function checkReset() {
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("reset") === "true") {
-      logsRef.remove();
-      inAppNotify("System logs cleared.");
-    }
-  }
-
-  // In-app notification helper
-  function inAppNotify(msg, actionText = null, action = null) {
-    const note = document.createElement("div");
-    note.className = "notify";
-    note.innerHTML = msg;
-    if (actionText && action) {
-      const btn = document.createElement("button");
-      btn.textContent = actionText;
-      btn.style.marginTop = "10px";
-      btn.onclick = () => {
-        action();
-        note.remove();
-      };
-      note.appendChild(btn);
-    }
-    app.prepend(note);
-    setTimeout(() => note.remove(), 10000);
-  }
-
-  // Page load logic
-  window.onload = () => {
-    loginScreen();
-    checkReset();
-    setInterval(simulateAlarm, Math.random() * 180000 + 180000); // random 3–6 min
-    startCheckInCycle();
+  const TAGS = {
+    Outdoor: ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5"],
+    Indoor: ["Tag 6", "Tag 7", "Tag 8", "Tag 9", "Tag 10"]
   };
+
+  const ALARM_MSGS = [
+    "Motion detected near Loading Dock",
+    "Unauthorized entry at Main Gate",
+    "Suspicious package detected near Parking Lot",
+    "Graffiti reported near building wall",
+    "Flood sensor triggered in basement",
+    "Fire alarm test in Lobby",
+    "Camera offline at East Corridor"
+  ];
+
+  // Local data cache
+  let logs = [];
+  let screenStack = [];
+  let notifications = [];
+
+  let alarmTimer = null;
+  let checkinTimer = null;
+
+  // ============ Utility Functions ============
+
+  function saveLogsToLocal(){
+    localStorage.setItem('logs', JSON.stringify(logs));
+  }
+
+  function loadLogsFromLocal(){
+    try {
+      const data = localStorage.getItem('logs');
+      if(data){
+        const parsed = JSON.parse(data);
+        if(Array.isArray(parsed)){
+          logs = parsed.map(e => ({...e, ts: new Date(e.ts)}));
+        }
+      }
+    } catch(e){ logs = []; }
+  }
+
+  function addLog(log){
+    logs.unshift(log);
+    saveLogsToLocal();
+    // Push to Firebase
+    if(logsRef){
+      logsRef.push(log).catch(() => {}); // fail silently
+    }
+  }
+
+  function notify(msg){
+    notifications.unshift(msg);
+    const n = document.createElement('div');
+    n.className = 'notify';
+    n.innerText = msg;
+    appEl.insertBefore(n, appEl.firstChild);
+    setTimeout(() => n.remove(), 6000);
+  }
+
+  function formatTime(d){ return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
+
+  // Modal prompt replacement for alert/prompt/confirm
+  // type: "alert", "confirm", "prompt"
+  // Returns Promise<boolean|string>
+  function showModal({text = '', type = 'alert', placeholder = ''}){
+    return new Promise((resolve) => {
+      modalDesc.textContent = text;
+      modalInput.style.display = (type === 'prompt') ? 'block' : 'none';
+      modalInput.value = '';
+      modalInput.placeholder = placeholder;
+
+      modalOkBtn.textContent = (type === 'confirm' || type === 'prompt') ? 'OK' : 'Close';
+      modalCancelBtn.style.display = (type === 'confirm' || type === 'prompt') ? 'inline-block' : 'none';
+
+      modalOverlay.style.display = 'flex';
+
+      function cleanup(){
+        modalOkBtn.removeEventListener('click', onOk);
+        modalCancelBtn.removeEventListener('click', onCancel);
+        modalInput.removeEventListener('keydown', onKeydown);
+        modalOverlay.style.display = 'none';
+      }
+
+      function onOk(){
+        cleanup();
+        if(type === 'prompt') resolve(modalInput.value);
+        else if(type === 'confirm') resolve(true);
+        else resolve(true);
+      }
+
+      function onCancel(){
+        cleanup();
+        if(type === 'prompt') resolve(null);
+        else if(type === 'confirm') resolve(false);
+        else resolve();
+      }
+
+      function onKeydown(e){
+        if(e.key === 'Enter'){
+          onOk();
+        } else if(e.key === 'Escape'){
+          onCancel();
+        }
+      }
+
+      modalOkBtn.addEventListener('click', onOk);
+      modalCancelBtn.addEventListener('click', onCancel);
+      if(type === 'prompt') modalInput.addEventListener('keydown', onKeydown);
+
+      if(type === 'prompt') modalInput.focus();
+      else modalOkBtn.focus();
+    });
+  }
+
+  // ============ Screen stack navigation ============
+
+  function showScreen(screenFunc){
+    screenStack.push(screenFunc);
+    screenFunc();
+  }
+
+  function goBack(){
+    if(screenStack.length > 1){
+      screenStack.pop();
+      screenStack[screenStack.length - 1]();
+    }
+  }
+
+  function goHome(){
+    screenStack.splice(1);
+    screenStack[0]();
+  }
+
+  // ============ Screens ============
+
+  // Login Screen
+  function loginScreen(){
+    appEl.innerHTML = `
+      <div class="app-bar">Login</div>
+      <div class="content">
+        <input id="username" placeholder="Guard name or ID" autocomplete="off" aria-label="Username"/>
+        <button id="loginBtn" disabled>Login</button>
+      </div>
+    `;
+    const input = document.getElementById('username');
+    const btn = document.getElementById('loginBtn');
+    input.focus();
+    input.addEventListener('input', () => {
+      btn.disabled = input.value.trim().length === 0;
+    });
+    btn.onclick = () => {
+      const user = input.value.trim();
+      if(user){
+        localStorage.setItem('user', user);
+        if(!localStorage.getItem('patrolSite')) localStorage.setItem('patrolSite', CONTRACT_SITES[0].code);
+        if(!localStorage.getItem('patrolType')) localStorage.setItem('patrolType', 'Outdoor');
+        showScreen(homeScreen);
+      }
+    };
+  }
+
+  // Home Screen
+  function homeScreen(){
+    const user = localStorage.getItem('user') || 'Unknown Guard';
+    appEl.innerHTML = `
+      <div class="app-bar">VSS Patrol Home</div>
+      <div class="content">
+        <div><strong>Hello, ${user}</strong></div>
+        <div class="home-grid" role="list">
+          <div role="listitem" tabindex="0" class="app-icon" id="openPatrol">🛰️ Patrol</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="openReport">📝 Report</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="openMsgs">📋 Messages</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="triggerPanic">❗ Panic</div>
+        </div>
+      </div>
+    `;
+    document.getElementById('openPatrol').onclick = patrolScreen;
+    document.getElementById('openPatrol').onkeypress = e => { if(e.key==='Enter') patrolScreen(); };
+    document.getElementById('openReport').onclick = reportScreen;
+    document.getElementById('openReport').onkeypress = e => { if(e.key==='Enter') reportScreen(); };
+    document.getElementById('openMsgs').onclick = messageScreen;
+    document.getElementById('openMsgs').onkeypress = e => { if(e.key==='Enter') messageScreen(); };
+    document.getElementById('triggerPanic').onclick = triggerPanic;
+    document.getElementById('triggerPanic').onkeypress = e => { if(e.key==='Enter') triggerPanic(); };
+  }
+
+  // Panic Screen/Function
+  async function triggerPanic(){
+    const user = localStorage.getItem('user') || 'Unknown';
+    // Prompt for location
+    const loc = await showModal({text: "Panic activated! Please enter your current location:", type: "prompt", placeholder:"Location"});
+    const timeStr = formatTime(new Date());
+    const txt = loc ? `⚠️ PANIC ALERT by ${user} at ${loc} (${timeStr})` : `⚠️ PANIC ALERT by ${user} (location unknown) (${timeStr})`;
+    addLog({type:'panic', user, text: txt, ts: new Date()});
+    notify("PANIC activated!");
+    goHome();
+  }
+
+  // Patrol Screen
+  function patrolScreen(){
+    const user = localStorage.getItem('user') || 'Unknown';
+    const patrolSiteCode = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
+    const patrolType = localStorage.getItem('patrolType') || 'Outdoor';
+
+    // Site options
+    const siteOptions = CONTRACT_SITES.map(site =>
+      `<option value="${site.code}" ${site.code === patrolSiteCode ? 'selected' : ''}>${site.name}</option>`
+    ).join('');
+
+    // Determine allowed patrol types (HOA & BIA only outdoor)
+    let patrolTypesAllowed = PATROL_TYPES;
+    if(patrolSiteCode === 'HOA' || patrolSiteCode === 'BIA') patrolTypesAllowed = ['Outdoor'];
+
+    const patrolTypeOptions = patrolTypesAllowed.map(t =>
+      `<option value="${t}" ${t === patrolType ? 'selected' : ''}>${t}</option>`
+    ).join('');
+
+    const currentTags = TAGS[patrolType] || [];
+
+    appEl.innerHTML = `
+      <div class="app-bar">Patrol - ${patrolSiteCode} (${patrolType})</div>
+      <div class="content" role="form">
+        <label for="siteSelect"><strong>Select Site</strong></label>
+        <select id="siteSelect" aria-label="Select Patrol Site">${siteOptions}</select>
+
+        <label for="patrolTypeSelect"><strong>Select Patrol Type</strong></label>
+        <select id="patrolTypeSelect" aria-label="Select Patrol Type">${patrolTypeOptions}</select>
+
+        <label for="tagSelect"><strong>Scan Tag</strong></label>
+        <select id="tagSelect" aria-label="Select Tag">
+          <option value="" disabled selected>-- Select Tag --</option>
+          ${currentTags.map(t => `<option>${t}</option>`).join('')}
+        </select>
+        <button id="scanBtn" disabled>Scan Tag</button>
+        <div id="scanResult" style="margin-top:10px; font-weight:600;"></div>
+      </div>
+    `;
+
+    const siteSelect = document.getElementById('siteSelect');
+    const patrolTypeSelect = document.getElementById('patrolTypeSelect');
+    const tagSelect = document.getElementById('tagSelect');
+    const scanBtn = document.getElementById('scanBtn');
+    const scanResult = document.getElementById('scanResult');
+
+    function updateTags(type){
+      const newTags = TAGS[type] || [];
+      tagSelect.innerHTML = `<option value="" disabled selected>-- Select Tag --</option>` +
+        newTags.map(t => `<option>${t}</option>`).join('');
+    }
+
+    siteSelect.onchange = () => {
+      const selectedSite = siteSelect.value;
+      localStorage.setItem('patrolSite', selectedSite);
+      let newPatrolTypes = PATROL_TYPES;
+      if(selectedSite === 'HOA' || selectedSite === 'BIA') newPatrolTypes = ['Outdoor'];
+
+      patrolTypeSelect.innerHTML = newPatrolTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+      patrolTypeSelect.value = newPatrolTypes[0];
+      localStorage.setItem('patrolType', newPatrolTypes[0]);
+
+      updateTags(newPatrolTypes[0]);
+      scanBtn.disabled = true;
+      scanResult.textContent = '';
+    };
+
+    patrolTypeSelect.onchange = () => {
+      const newType = patrolTypeSelect.value;
+      localStorage.setItem('patrolType', newType);
+      updateTags(newType);
+      scanBtn.disabled = true;
+      scanResult.textContent = '';
+    };
+
+    tagSelect.onchange = () => {
+      scanBtn.disabled = tagSelect.value === "";
+      scanResult.textContent = '';
+    };
+
+    scanBtn.onclick = () => {
+      const tag = tagSelect.value;
+      if(!tag) return;
+      const siteName = CONTRACT_SITES.find(s => s.code === localStorage.getItem('patrolSite'))?.name || 'Unknown Site';
+      const timeStr = formatTime(new Date());
+      const msg = `Tag "${tag}" scanned by ${user} at ${siteName} (${timeStr})`;
+      addLog({type: 'scan', user, text: msg, ts: new Date()});
+      scanResult.textContent = msg;
+      notify("Tag scanned!");
+    };
+  }
+
+  // Report Screen
+  function reportScreen(){
+    const user = localStorage.getItem('user') || 'Unknown';
+    const patrolSiteCode = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
+
+    appEl.innerHTML = `
+      <div class="app-bar">Submit Report</div>
+      <div class="content" role="form">
+        <label for="reportType"><strong>Report Type</strong></label>
+        <select id="reportType" aria-label="Report Type">
+          <option disabled selected>Select Type</option>
+          <option>Incident</option>
+          <option>Hazard</option>
+          <option>Maintenance</option>
+          <option>Other</option>
+        </select>
+
+        <label for="reportLocation"><strong>Location (optional)</strong></label>
+        <input id="reportLocation" type="text" placeholder="e.g. Gate 3, Lobby" value="${patrolSiteCode}" aria-label="Report Location" />
+
+        <label for="reportDetails"><strong>Details</strong></label>
+        <textarea id="reportDetails" rows="5" placeholder="Describe the report..." aria-label="Report Details"></textarea>
+
+        <button id="submitReport" disabled>Submit</button>
+        <div id="reportMsg" style="margin-top:10px;font-weight:600;color:#3a5998;"></div>
+      </div>
+    `;
+
+    const reportType = document.getElementById('reportType');
+    const reportLocation = document.getElementById('reportLocation');
+    const reportDetails = document.getElementById('reportDetails');
+    const submitBtn = document.getElementById('submitReport');
+    const reportMsg = document.getElementById('reportMsg');
+
+    function checkEnable(){
+      submitBtn.disabled = !reportType.value || reportDetails.value.trim().length === 0;
+    }
+    reportType.onchange = checkEnable;
+    reportDetails.oninput = checkEnable;
+
+    submitBtn.onclick = () => {
+      const type = reportType.value;
+      const loc = reportLocation.value.trim();
+      const details = reportDetails.value.trim();
+      if(!type || !details) return;
+      const timeStr = formatTime(new Date());
+      const msg = `[${type}] Report by ${user}${loc ? ' @'+loc : ''}: ${details} (${timeStr})`;
+      addLog({type:'report', user, text: msg, ts: new Date()});
+      reportMsg.textContent = 'Report submitted.';
+      reportType.value = "";
+      reportDetails.value = "";
+      reportLocation.value = patrolSiteCode;
+      submitBtn.disabled = true;
+      notify("Report submitted!");
+    };
+  }
+
+  // Message Board Screen
+  function messageScreen(){
+    appEl.innerHTML = `
+      <div class="app-bar">Message Board</div>
+      <div class="content">
+        <textarea id="msgInput" placeholder="Write message here..." aria-label="Write Message"></textarea>
+        <button id="sendMsgBtn" disabled>Send</button>
+        <button id="clearMsgsBtn">Clear Messages</button>
+        <div id="messages" class="message-board" aria-live="polite" aria-atomic="false" style="margin-top:10px; max-height:240px; overflow-y:auto;"></div>
+      </div>
+    `;
+
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendMsgBtn');
+    const clearBtn = document.getElementById('clearMsgsBtn');
+    const messagesDiv = document.getElementById('messages');
+    const user = localStorage.getItem('user') || 'Unknown';
+
+    function renderMessages(){
+      messagesDiv.innerHTML = '';
+      logs.forEach(log => {
+        if(log.type === 'message'){
+          const entry = document.createElement('div');
+          entry.className = 'entry';
+          const ts = new Date(log.ts);
+          entry.innerHTML = `<strong>${log.user}</strong>${log.text}<div class="ts">${ts.toLocaleString()}</div>`;
+          messagesDiv.appendChild(entry);
+        }
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    msgInput.oninput = () => {
+      sendBtn.disabled = msgInput.value.trim().length === 0;
+    };
+
+    sendBtn.onclick = () => {
+      const text = msgInput.value.trim();
+      if(!text) return;
+      addLog({type:'message', user, text, ts: new Date()});
+      msgInput.value = '';
+      sendBtn.disabled = true;
+      renderMessages();
+      notify("Message sent.");
+    };
+
+    clearBtn.onclick = async () => {
+      const ok = await showModal({text:"Clear all messages? This cannot be undone.", type:"confirm"});
+      if(ok){
+        logs = logs.filter(l => l.type !== 'message');
+        saveLogsToLocal();
+        renderMessages();
+        notify("Messages cleared.");
+      }
+    };
+
+    renderMessages();
+  }
+
+  // ============ Periodic Alarms & Check-ins ============
+
+  function randomAlarm(){
+    if(screenStack[screenStack.length-1] === patrolScreen){
+      const msg = ALARM_MSGS[Math.floor(Math.random()*ALARM_MSGS.length)];
+      notify("ALARM: " + msg);
+      addLog({type:'alarm', user: localStorage.getItem('user')||'Unknown', text: `Alarm: ${msg}`, ts: new Date()});
+    }
+  }
+
+  function periodicCheckIn(){
+    if(screenStack[screenStack.length-1] === homeScreen){
+      showModal({text: "Check-in: Are you okay?", type:"confirm"}).then(ok => {
+        if(!ok){
+          notify("Check-in not answered, alerting supervisor.");
+          addLog({type:'alert', user: localStorage.getItem('user')||'Unknown', text: 'Missed check-in', ts: new Date()});
+        } else {
+          notify("Check-in confirmed.");
+        }
+      });
+    }
+  }
+
+  // ============ Status Bar Time ============
+
+  function updateTime(){
+    const now = new Date();
+    statusTime.textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  }
+  setInterval(updateTime, 30000);
+  updateTime();
+
+  // ============ Navigation Buttons ============
+
+  btnBack.onclick = () => {
+    goBack();
+  };
+  btnHome.onclick = () => {
+    goHome();
+  };
+  btnMenu.onclick = () => {
+    showModal({text:"Menu:\n1. Logout\n\nPress OK to logout or Cancel to dismiss.", type:"confirm"}).then(ok => {
+      if(ok){
+        localStorage.removeItem('user');
+        showScreen(loginScreen);
+      }
+    });
+  };
+
+  // ============ Initialization ============
+
+  loadLogsFromLocal();
+
+  // Start app at login or home depending on user stored
+  if(localStorage.getItem('user')){
+    showScreen(homeScreen);
+  } else {
+    showScreen(loginScreen);
+  }
+
+  // Start periodic alarms every 2-4 mins (randomized interval)
+  function startAlarmCycle(){
+    const interval = 120000 + Math.random() * 120000;
+    alarmTimer = setTimeout(() => {
+      randomAlarm();
+      startAlarmCycle();
+    }, interval);
+  }
+  startAlarmCycle();
+
+  // Start check-ins every 5 minutes
+  checkinTimer = setInterval(periodicCheckIn, 5*60000);
+
+  // Sync logs from Firebase (simple 1-way push only)
+  logsRef.on('child_added', snapshot => {
+    const log = snapshot.val();
+    if(log && !logs.some(l => l.ts && new Date(l.ts).getTime() === new Date(log.ts).getTime() && l.text === log.text)){
+      logs.unshift({...log, ts: new Date(log.ts)});
+      saveLogsToLocal();
+      if(screenStack.length && screenStack[screenStack.length -1] === messageScreen){
+        messageScreen(); // refresh messages if open
+      }
+    }
+  });
+
 </script>
-  </body>
+</body>
 </html>
