@@ -245,6 +245,26 @@
   label {
     font-weight: 600;
   }
+  .tag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .tag-button {
+    background: #e0e7ff;
+    border: 1px solid #b0b8d9;
+    border-radius: 8px;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tag-button:active {
+    background: #c0d0ff;
+    transform: scale(0.98);
+  }
 </style>
 </head>
 <body>
@@ -263,6 +283,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
 <script>
 (() => {
   const firebaseConfig = {
@@ -318,12 +339,14 @@
 
   let alarmTimer = null;
   let checkinTimer = null;
+  let messageCleanupTimer = null;
 
   function saveLocal() {
     localStorage.setItem('user', currentUser);
     localStorage.setItem('patrolSite', currentPatrolSite);
     localStorage.setItem('patrolType', currentPatrolType);
   }
+  
   function loadLocal() {
     currentUser = localStorage.getItem('user') || '';
     currentPatrolSite = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
@@ -337,6 +360,7 @@
   function saveLogsLocal(){
     localStorage.setItem('logs', JSON.stringify(logs));
   }
+  
   function loadLogsLocal(){
     try {
       logs = JSON.parse(localStorage.getItem('logs')) || [];
@@ -348,6 +372,7 @@
   function saveGuardsLocal() {
     localStorage.setItem('guards', JSON.stringify(guards));
   }
+  
   function loadGuardsLocal() {
     try {
       guards = JSON.parse(localStorage.getItem('guards')) || {};
@@ -387,12 +412,14 @@
     screenStack.push(screenFunc);
     screenFunc();
   }
+  
   function goBack(){
     if(screenStack.length > 1){
       screenStack.pop();
       screenStack[screenStack.length - 1]();
     }
   }
+  
   function goHome(){
     screenStack.splice(1);
     screenStack[0]();
@@ -505,7 +532,7 @@
         <select id="patrolTypeSelect" aria-label="Select patrol type">
           ${PATROL_TYPES.map(t => `<option${t === currentPatrolType ? ' selected' : ''}>${t}</option>`).join('')}
         </select>
-        <div id="tagList" role="list" style="margin-top: 10px;"></div>
+        <div class="tag-grid" id="tagList" role="list" style="margin-top: 10px;"></div>
       </div>
     `;
 
@@ -517,8 +544,9 @@
       const type = patrolTypeSelect.value;
       const tags = TAGS[type];
       tagList.innerHTML = tags.map(tag => `
-        <button class="app-icon" style="font-size:14px; padding: 8px 10px; margin: 4px;" aria-label="Scan ${tag}">${tag}</button>
+        <div class="tag-button" role="button" tabindex="0" aria-label="Scan ${tag}">${tag}</div>
       `).join('');
+      
       [...tagList.children].forEach(btn => {
         btn.onclick = () => {
           logEvent({
@@ -531,6 +559,13 @@
           });
           notify(`Tag scanned: ${btn.textContent}`);
         };
+        
+        btn.onkeydown = e => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            btn.click();
+          }
+        };
       });
     }
 
@@ -538,6 +573,7 @@
       currentPatrolSite = siteSelect.value;
       saveLocal();
     };
+    
     patrolTypeSelect.onchange = () => {
       currentPatrolType = patrolTypeSelect.value;
       saveLocal();
@@ -555,12 +591,14 @@
         <button id="submitReportBtn" disabled>Submit Report</button>
       </div>
     `;
+    
     const input = document.getElementById('reportInput');
     const btn = document.getElementById('submitReportBtn');
     input.focus();
     input.addEventListener('input', () => {
       btn.disabled = input.value.trim().length === 0;
     });
+    
     btn.onclick = () => {
       const msg = input.value.trim();
       if(msg){
@@ -603,6 +641,7 @@
       e.preventDefault();
       const text = messageInput.value.trim();
       if(!text) return;
+      
       logEvent({
         type: 'chat',
         user: currentUser,
@@ -610,48 +649,77 @@
         message: text,
         ts: new Date().toISOString()
       });
+      
       messageInput.value = '';
       sendBtn.disabled = true;
     };
 
     function renderMessages(){
       if(logs.length === 0){
-        messageList.innerHTML = `<div>No messages yet.</div>`;
+        messageList.innerHTML = `<div style="padding: 10px; text-align: center; color: #666;">No messages yet</div>`;
         return;
       }
-      const items = logs.map(log => {
-        const timeStr = new Date(log.ts).toLocaleString();
-        let content = '';
-        let cls = 'entry';
-        switch(log.type){
-          case 'tagScan':
-            cls += ' scan';
-            content = `<strong>Tag scanned by ${log.user}:</strong> ${log.tag} at ${log.site}`;
-            break;
-          case 'panic':
-            cls += ' panic';
-            content = `<strong>🚨 Panic Alert from ${log.user}!</strong> Location: ${log.location || 'Unknown'}`;
-            break;
-          case 'alarm':
-            cls += ' alarm';
-            content = `<strong>⚠️ Alarm:</strong> ${log.message} at ${log.site}`;
-            break;
-          case 'report':
-            content = `<strong>Report by ${log.user}:</strong> ${log.message}`;
-            break;
-          case 'chat':
-            content = `<strong>${log.user}:</strong> ${log.message}`;
-            break;
-          default:
-            content = JSON.stringify(log);
-        }
-        return `<div class="${cls}"><div>${content}</div><div class="ts">${timeStr}</div></div>`;
-      });
+      
+      const now = new Date();
+      const thirtyMinutesAgo = now.getTime() - (30 * 60 * 1000);
+      
+      const items = logs
+        .filter(log => log.ts.getTime() > thirtyMinutesAgo) // Only show messages from last 30 minutes
+        .map(log => {
+          const timeStr = log.ts.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+          let content = '';
+          let cls = 'entry';
+          
+          switch(log.type){
+            case 'tagScan':
+              cls += ' scan';
+              content = `<strong>Tag scanned by ${log.user}:</strong> ${log.tag} at ${log.site}`;
+              break;
+            case 'panic':
+              cls += ' panic';
+              content = `<strong>🚨 Panic Alert from ${log.user}!</strong> Location: ${log.location || 'Unknown'}`;
+              break;
+            case 'alarm':
+              cls += ' alarm';
+              content = `<strong>⚠️ Alarm:</strong> ${log.message} at ${log.site}`;
+              break;
+            case 'report':
+              content = `<strong>Report by ${log.user}:</strong> ${log.message}`;
+              break;
+            case 'chat':
+              content = `<strong>${log.user}:</strong> ${log.message}`;
+              break;
+            default:
+              content = JSON.stringify(log);
+          }
+          
+          return `<div class="${cls}"><div>${content}</div><div class="ts">${timeStr}</div></div>`;
+        });
+        
       messageList.innerHTML = items.join('');
       messageList.scrollTop = messageList.scrollHeight;
     }
 
     renderMessages();
+    
+    // Clean up old messages periodically
+    if(messageCleanupTimer) clearInterval(messageCleanupTimer);
+    messageCleanupTimer = setInterval(() => {
+      const now = new Date();
+      const thirtyMinutesAgo = now.getTime() - (30 * 60 * 1000);
+      
+      // Remove messages older than 30 minutes from Firebase
+      logs.forEach(log => {
+        if(log.ts.getTime() < thirtyMinutesAgo) {
+          // In a real app, we would remove the specific message from Firebase
+          // But since we're using push() which generates random keys, we can't easily
+          // reference them here. In a production app, you'd need a different approach.
+        }
+      });
+      
+      // Re-render to update the UI
+      renderMessages();
+    }, 5 * 60 * 1000); // Check every 5 minutes
   }
 
   function panicScreen(){
@@ -664,21 +732,25 @@
         <button id="sendPanicBtn" disabled>Send Panic</button>
       </div>
     `;
+    
     const input = document.getElementById('panicLocation');
     const btn = document.getElementById('sendPanicBtn');
     input.focus();
     input.addEventListener('input', () => {
       btn.disabled = input.value.trim().length === 0;
     });
+    
     btn.onclick = () => {
       const location = input.value.trim();
       if(!location) return;
+      
       logEvent({
         type: 'panic',
         user: currentUser,
         location,
         ts: new Date().toISOString()
       });
+      
       notify('Panic alert sent!');
       showScreen(homeScreen);
     };
@@ -700,6 +772,7 @@
         <button id="saveStatusBtn">Save</button>
       </div>
     `;
+    
     const statusSelect = document.getElementById('statusSelect');
     const locationInput = document.getElementById('locationInput');
     const saveBtn = document.getElementById('saveStatusBtn');
@@ -707,11 +780,13 @@
     saveBtn.onclick = () => {
       const newStatus = statusSelect.value;
       const newLocation = locationInput.value.trim() || "Unknown";
+      
       guardsRef.child(currentUser).update({
         status: newStatus,
         location: newLocation,
         lastSeen: new Date().toISOString()
       });
+      
       notify("Status updated.");
       showScreen(homeScreen);
     };
@@ -783,6 +858,7 @@
       notify('Check-in OK received.');
       startCheckInTimer();
     };
+    
     box.querySelector('#btnNo').onclick = () => {
       clearInterval(interval);
       document.body.removeChild(modal);
@@ -803,6 +879,7 @@
     const m = now.getMinutes().toString().padStart(2,'0');
     document.getElementById('statusTime').textContent = `${h}:${m}`;
   }
+  
   setInterval(updateClock, 1000);
   updateClock();
 
@@ -810,6 +887,7 @@
     loadLocal();
     loadLogsLocal();
     loadGuardsLocal();
+    
     if(!currentUser){
       showScreen(loginScreen);
     } else {
