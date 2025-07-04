@@ -1,623 +1,418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>VSS Patrol App</title>
-<style>
-  @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
-  * {
-    box-sizing: border-box;
-  }
-  body,
-  html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: 'Roboto', sans-serif;
-    background: #000;
-    color: #fff;
-  }
-  #device {
-    width: 360px;
-    height: 640px;
-    border: 2px solid #222;
-    border-radius: 16px;
-    margin: 20px auto;
-    position: relative;
-    overflow: hidden;
-    background: #f9f9f9;
-    box-shadow:
-      inset 0 0 10px #aaa,
-      0 10px 30px rgba(0, 0, 0, 0.6);
-  }
-  .status-bar {
-    height: 24px;
-    background: #222;
-    color: #ccc;
-    padding: 0 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    text-shadow: 0 1px 0 #000;
-    font-weight: 500;
-    font-family: monospace;
-  }
-  #screen {
-    position: absolute;
-    top: 24px;
-    bottom: 56px;
-    left: 0;
-    right: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background: #e6e6e6;
-    color: #111;
-  }
-  .nav-bar {
-    height: 56px;
-    background: #222;
-    display: flex;
-    box-shadow: inset 0 1px 0 #444;
-  }
-  .nav-bar button {
-    flex: 1;
-    border: none;
-    background: #222;
-    color: #ccc;
-    font-size: 24px;
-    outline: none;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s ease;
-    font-weight: 700;
-  }
-  .nav-bar button:active {
-    background: #555;
-    color: #eee;
-  }
-  .app-bar {
-    background: #3a5998;
-    padding: 12px 16px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 18px;
-    text-shadow: 0 1px 2px #000a;
-    letter-spacing: 0.03em;
-    box-shadow: inset 0 -2px 4px #2c4674;
-  }
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 14px 16px;
-    background: #fff;
-    color: #222;
-  }
-  .home-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    padding: 10px 0;
-  }
-  .app-icon {
-    background: #fafafa;
-    border: 1px solid #999;
-    border-radius: 14px;
-    height: 90px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #333;
-    font-size: 16px;
-    box-shadow: 0 1px 4px #bbb;
-    cursor: pointer;
-    user-select: none;
-    font-weight: 600;
-    transition: background 0.15s ease;
-  }
-  .app-icon:hover {
-    background: #d9e3f0;
-  }
-  input,
-  select,
-  textarea,
-  button {
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-  }
-  input,
-  select,
-  textarea {
-    width: 100%;
-    margin: 8px 0 12px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border: 1.5px solid #aaa;
-    outline: none;
-    transition: border-color 0.3s ease;
-    color: #111;
-  }
-  input:focus,
-  select:focus,
-  textarea:focus {
-    border-color: #3a5998;
-    box-shadow: 0 0 8px #3a5998aa;
-  }
-  button {
-    background: #3a5998;
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 700;
-    box-shadow: 0 3px 8px #30518c;
-    user-select: none;
-  }
-  button:disabled {
-    background: #888;
-    cursor: not-allowed;
-    box-shadow: none;
-  }
-  button:active:not(:disabled) {
-    background: #2a3f6d;
-  }
-  .notify {
-    background: #ffeb3b;
-    color: #111;
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 0 6px #c1b702;
-  }
-  .message-board .entry {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
-    font-size: 13px;
-    color: #222;
-    box-shadow: 0 1px 5px #bbb;
-  }
-  .message-board .entry strong {
-    display: block;
-    font-size: 14px;
-    margin-bottom: 4px;
-    color: #3a5998;
-  }
-  .message-board .entry .ts {
-    opacity: 0.6;
-    font-size: 11px;
-    margin-top: 6px;
-    font-family: monospace;
-  }
-  textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VSS Patrol App</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #000;
+      color: #fff;
+      user-select: none;
+    }
+    .status-bar {
+      background-color: #222;
+      color: #ccc;
+      padding: 4px 10px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .app-bar {
+      background-color: #333;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #111;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      border-top: 1px solid #444;
+    }
+    .nav-bar button {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 18px;
+    }
+    .content {
+      padding: 10px 15px 60px;
+    }
+    .entry {
+      margin-bottom: 10px;
+      padding: 6px;
+      border-bottom: 1px solid #333;
+    }
+    .entry .ts {
+      font-size: 12px;
+      color: #aaa;
+    }
+    button {
+      background-color: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+    .panic-banner {
+      background-color: red;
+      color: white;
+      text-align: center;
+      padding: 5px;
+      font-weight: bold;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(255, 0, 0, 0.4);
+      z-index: 1000;
+      display: none;
+    }
+    .notify {
+      background-color: #ffc107;
+      color: black;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
-  <div id="device" role="main" aria-label="VSS Patrol App">
-    <div class="status-bar" aria-live="polite" aria-atomic="true" aria-relevant="text">
-      <div class="left" id="statusTime">--:--</div>
-      <div class="right">🔋 85%</div>
-    </div>
-    <div id="screen"><div id="app" tabindex="0"></div></div>
-    <div class="nav-bar" role="navigation" aria-label="Navigation Buttons">
-      <button id="btnBack" aria-label="Back">◀</button>
-      <button id="btnHome" aria-label="Home">⏺</button>
-      <button id="btnMenu" aria-label="Menu">☰</button>
-    </div>
+  <div class="status-bar">
+    <span id="time">--:--</span>
+    <span>🔋 100%</span>
   </div>
-
+  <div id="panicBanner" class="panic-banner" style="display:none;">🚨 GUARD IN PANIC MODE — ACTION REQUIRED</div>
+  <div id="app" class="content">Loading...</div>
+  <div class="nav-bar">
+    <button id="btnBack">◀</button>
+    <button id="btnHome">🏠</button>
+    <button id="btnMenu">☰</button>
+  </div>
+  <div class="overlay" id="flashOverlay"></div>
+  <script src="firebase-config.js"></script>
 <script>
-(() => {
-  // Reset URL param
-  const p = new URL(location).searchParams;
-  if(p.get('reset') === 'true'){
-    localStorage.clear();
-    alert("App reset.");
-    location.href = location.pathname;
-  }
-})();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const logsRef = db.ref("logs");
+const guardsRef = db.ref("guards");
 
-setInterval(() => {
-  const now = new Date();
-  document.getElementById('statusTime').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-}, 1000);
-
-const appEl = document.getElementById('app');
-const btnBack = document.getElementById('btnBack');
-const btnHome = document.getElementById('btnHome');
-const btnMenu = document.getElementById('btnMenu');
-
-const CONTRACT_SITES = [
-  {name: "Vancouver General Hospital", code:"VGH"},
-  {name: "Vancouver Power Plant", code:"Power Plant"},
-  {name: "Family Jewels & Gadget Store", code:"FJGS"},
-  {name: "Toronto Dominion Bank", code:"TDB"},
-  {name: "Gas & Go Franchises", code:"Gas & Go"},
-  {name: "Three Guys Corporation", code:"Three Guys"},
-  {name: "Fortis BC Gas Depot", code:"Fortis BC"},
-  {name: "Canada Post Corporation", code:"Canada Post"},
-  {name: "Lake View HOA", code:"HOA"},
-  {name: "Maple Street BIA", code:"BIA"}
-];
-
-const PATROL_TYPES = ['Outdoor', 'Indoor'];
-
-const TAGS = {
-  Outdoor: ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5"],
-  Indoor: ["Tag 6", "Tag 7", "Tag 8", "Tag 9", "Tag 10"]
-};
-
-const ALARM_MSGS = [
-  "Motion detected near Loading Dock",
-  "Unauthorized entry at Main Gate",
-  "Suspicious package detected near Parking Lot",
-  "Graffiti reported near building wall",
-  "Flood sensor triggered in basement",
-  "Fire alarm test in Lobby",
-  "Camera offline at East Corridor"
-];
-
-let logs = JSON.parse(localStorage.getItem('logs') || '[]');
-let notifications = [];
+let currentUser = "";
+let currentStatus = "Active";
+let currentScreen = "login";
 let screenStack = [];
 
-let alarmTimer = null;
-let checkinTimer = null;
+const app = document.getElementById("app");
+const panicBanner = document.getElementById("panicBanner");
+const flashOverlay = document.getElementById("flashOverlay");
+const checkInInterval = 5 * 60 * 1000; // 5 minutes
 
-function saveLogs() {
-  localStorage.setItem('logs', JSON.stringify(logs));
+function now() {
+  return new Date().toLocaleString();
 }
 
-// Push screen to stack and show
-function showScreen(screenFunc){
-  screenStack.push(screenFunc);
-  screenFunc();
+function showScreen(html) {
+  app.innerHTML = html;
 }
 
-// Go back in stack
-function goBack(){
-  if(screenStack.length > 1){
-    screenStack.pop();
-    screenStack[screenStack.length - 1]();
+function goHome() {
+  screenStack = [];
+  homeScreen();
+}
+
+function goBack() {
+  if (screenStack.length > 0) {
+    const prev = screenStack.pop();
+    prev();
   }
 }
 
-// Go home (clear stack but keep first screen)
-function goHome(){
-  screenStack.splice(1);
-  screenStack[0]();
+function pushScreen(fn) {
+  screenStack.push(fn);
 }
 
-function notify(msg){
-  notifications.unshift(msg);
-  const n = document.createElement('div');
-  n.className = 'notify';
-  n.innerText = msg;
-  appEl.insertBefore(n, appEl.firstChild);
-  setTimeout(() => n.remove(), 6000);
+document.getElementById("btnHome").onclick = goHome;
+document.getElementById("btnBack").onclick = goBack;
+document.getElementById("btnMenu").onclick = () => homeScreen();
+
+setInterval(() => {
+  document.getElementById("time").innerText = new Date().toLocaleTimeString();
+}, 1000);
+  function loginScreen() {
+  showScreen(`
+    <h2>Welcome to VSS</h2>
+    <p>Enter your name:</p>
+    <input id="loginName" placeholder="Guard Name" />
+    <button onclick="handleLogin()">Login</button>
+  `);
 }
 
-// LOGIN SCREEN
-function loginScreen(){
-  appEl.innerHTML = `
-    <div class="app-bar">Login</div>
-    <div class="content">
-      <input id="username" placeholder="Guard name or ID" autocomplete="off" />
-      <button id="loginBtn" disabled>Login</button>
-    </div>
-  `;
-  const input = document.getElementById('username');
-  const btn = document.getElementById('loginBtn');
-  input.focus();
-  input.addEventListener('input', () => {
-    btn.disabled = input.value.trim().length === 0;
+function handleLogin() {
+  const name = document.getElementById("loginName").value.trim();
+  if (!name) return alert("Enter a name.");
+  currentUser = name;
+  guardsRef.child(name).set({
+    status: "Active",
+    lastSeen: now(),
+    location: "Logged In"
   });
-  btn.onclick = () => {
-    const user = input.value.trim();
-    if(user){
-      localStorage.setItem('user', user);
-      // Set default patrol site and type if none
-      if(!localStorage.getItem('patrolSite')) localStorage.setItem('patrolSite', CONTRACT_SITES[0].code);
-      if(!localStorage.getItem('patrolType')) localStorage.setItem('patrolType', 'Outdoor');
-      showScreen(homeScreen);
-    }
+  homeScreen();
+}
+
+function homeScreen() {
+  currentScreen = "home";
+  showScreen(`
+    <h2>Main Menu</h2>
+    <button onclick="patrolScreen()">🚶 Patrol</button>
+    <button onclick="reportScreen()">📝 Submit Report</button>
+    <button onclick="messageScreen()">📋 Message Board</button>
+    <button onclick="triggerPanic()">🚨 Panic</button>
+    <button onclick="statusScreen()">🧍 Set Status</button>
+  `);
+}
+
+function patrolScreen() {
+  pushScreen(homeScreen);
+  showScreen(`
+    <h3>Patrol</h3>
+    <label>Location:</label>
+    <select id="site">
+      <option value="VGH">Vancouver General Hospital</option>
+      <option value="PowerPlant">Vancouver Power Plant</option>
+      <option value="FamilyJewels">Family Jewels Outlet</option>
+      <option value="TD">TD Bank</option>
+      <option value="GasGo">Gas & Go</option>
+      <option value="ThreeGuys">Three Guys Corp</option>
+      <option value="Fortis">Fortis Gas Depot</option>
+      <option value="CanadaPost">Canada Post</option>
+      <option value="LakeHOA">Lake View HOA</option>
+      <option value="MapleBIA">Maple Street BIA</option>
+    </select>
+    <label>Route:</label>
+    <select id="route">
+      <option value="Outdoor">Outdoor</option>
+      <option value="Indoor">Indoor</option>
+    </select>
+    <button onclick="scanTag()">📍 Scan Tag</button>
+  `);
+}
+
+function scanTag() {
+  const site = document.getElementById("site").value;
+  const route = document.getElementById("route").value;
+  const tag = prompt("Enter tag number (1-10)");
+  if (!tag) return;
+
+  const entry = {
+    type: "scan",
+    user: currentUser,
+    site,
+    route,
+    tag,
+    time: now()
   };
+  logsRef.push(entry);
+  alert("Tag scanned successfully.");
+}
+  function reportScreen() {
+  pushScreen(homeScreen);
+  showScreen(`
+    <h3>Submit Report</h3>
+    <label>Type:</label>
+    <select id="reportType">
+      <option value="Hazard">Hazard</option>
+      <option value="Incident">Incident</option>
+      <option value="Maintenance">Maintenance</option>
+      <option value="Other">Other</option>
+    </select>
+    <label>Description:</label>
+    <textarea id="reportDesc" rows="4" placeholder="What happened?"></textarea>
+    <button onclick="submitReport()">Submit</button>
+  `);
 }
 
-// HOME SCREEN
-function homeScreen(){
-  const user = localStorage.getItem('user') || 'Unknown Guard';
-  appEl.innerHTML = `
-    <div class="app-bar">VSS Patrol Home</div>
-    <div class="content">
-      <div><strong>Hello, ${user}</strong></div>
-      <div class="home-grid" role="list">
-        <div role="listitem" tabindex="0" class="app-icon" id="openPatrol">🛰️ Patrol</div>
-        <div role="listitem" tabindex="0" class="app-icon" id="openReport">📝 Report</div>
-        <div role="listitem" tabindex="0" class="app-icon" id="openMsgs">📋 Messages</div>
-        <div role="listitem" tabindex="0" class="app-icon" id="triggerPanic">❗ Panic</div>
-      </div>
-    </div>
-  `;
-  document.getElementById('openPatrol').onclick = patrolScreen;
-  document.getElementById('openPatrol').onkeypress = e => { if(e.key==='Enter') patrolScreen(); };
-  document.getElementById('openReport').onclick = reportScreen;
-  document.getElementById('openReport').onkeypress = e => { if(e.key==='Enter') reportScreen(); };
-  document.getElementById('openMsgs').onclick = messageScreen;
-  document.getElementById('openMsgs').onkeypress = e => { if(e.key==='Enter') messageScreen(); };
-  document.getElementById('triggerPanic').onclick = triggerPanic;
-  document.getElementById('triggerPanic').onkeypress = e => { if(e.key==='Enter') triggerPanic(); };
-}
+function submitReport() {
+  const type = document.getElementById("reportType").value;
+  const desc = document.getElementById("reportDesc").value.trim();
+  if (!desc) return alert("Please provide a description.");
 
-// PANIC FUNCTION
-function triggerPanic(){
-  const user = localStorage.getItem('user');
-  const txt = `⚠️ PANIC ALERT by ${user} at ${new Date().toLocaleTimeString()}`;
-  logs.unshift({type:'panic',user, text: txt, ts: new Date()});
-  saveLogs();
-  notify("PANIC activated!");
+  const entry = {
+    type: "report",
+    user: currentUser,
+    reportType: type,
+    description: desc,
+    time: now()
+  };
+  logsRef.push(entry);
+  alert("Report submitted.");
   goHome();
 }
 
-// PATROL SCREEN
-function patrolScreen(){
-  const user = localStorage.getItem('user');
-  const patrolSiteCode = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
-  const patrolType = localStorage.getItem('patrolType') || 'Outdoor';
-
-  // Build site options
-  const siteOptions = CONTRACT_SITES.map(site => {
-    return `<option value="${site.code}" ${site.code === patrolSiteCode ? 'selected' : ''}>${site.name}</option>`;
-  }).join('');
-
-  // Build patrol type options: if HOA, only Outdoor; if BIA only Outdoor; else both
-  let patrolTypesAllowed = PATROL_TYPES;
-  if(patrolSiteCode === 'HOA' || patrolSiteCode === 'BIA') patrolTypesAllowed = ['Outdoor'];
-
-  const patrolTypeOptions = patrolTypesAllowed.map(type => {
-    return `<option value="${type}" ${type === patrolType ? 'selected' : ''}>${type}</option>`;
-  }).join('');
-
-  // Tags for current patrol type
-  const currentTags = TAGS[patrolType];
-
-  appEl.innerHTML = `
-    <div class="app-bar">Patrol - ${patrolSiteCode} (${patrolType})</div>
-    <div class="content">
-      <label for="siteSelect"><strong>Select Site</strong></label>
-      <select id="siteSelect">${siteOptions}</select>
-
-      <label for="patrolTypeSelect"><strong>Select Patrol Type</strong></label>
-      <select id="patrolTypeSelect">${patrolTypeOptions}</select>
-
-      <label for="tagSelect"><strong>Scan Tag</strong></label>
-      <select id="tagSelect">
-        <option value="" disabled selected>-- Select Tag --</option>
-        ${currentTags.map(t => `<option>${t}</option>`).join('')}
-      </select>
-      <button id="scanBtn" disabled>Scan Tag</button>
-      <div id="scanResult" style="margin-top:10px; font-weight:600;"></div>
-    </div>
-  `;
-
-  const siteSelect = document.getElementById('siteSelect');
-  const patrolTypeSelect = document.getElementById('patrolTypeSelect');
-  const tagSelect = document.getElementById('tagSelect');
-  const scanBtn = document.getElementById('scanBtn');
-  const scanResult = document.getElementById('scanResult');
-
-  // Update patrol site & reset patrol type & tags when site changes
-  siteSelect.onchange = () => {
-    const selectedSite = siteSelect.value;
-    localStorage.setItem('patrolSite', selectedSite);
-
-    // Adjust patrol types allowed
-    let newPatrolTypes = PATROL_TYPES;
-    if(selectedSite === 'HOA' || selectedSite === 'BIA') newPatrolTypes = ['Outdoor'];
-
-    // Update patrol type select options:
-    patrolTypeSelect.innerHTML = newPatrolTypes.map(t => `<option value="${t}">${t}</option>`).join('');
-    patrolTypeSelect.value = newPatrolTypes[0];
-    localStorage.setItem('patrolType', newPatrolTypes[0]);
-
-    // Update tags for new patrol type:
-    updateTags(newPatrolTypes[0]);
-    scanBtn.disabled = true;
-    scanResult.textContent = '';
-  };
-
-  // When patrol type changes update tags & localstorage
-  patrolTypeSelect.onchange = () => {
-    const newType = patrolTypeSelect.value;
-    localStorage.setItem('patrolType', newType);
-    updateTags(newType);
-    scanBtn.disabled = true;
-    scanResult.textContent = '';
-  };
-
-  // Enable scan button if a tag selected
-  tagSelect.onchange = () => {
-    scanBtn.disabled = tagSelect.value === "";
-    scanResult.textContent = '';
-  };
-
-  function updateTags(type){
-    const newTags = TAGS[type] || [];
-    tagSelect.innerHTML = `<option value="" disabled selected>-- Select Tag --</option>` +
-      newTags.map(t => `<option>${t}</option>`).join('');
-  }
-
-  scanBtn.onclick = () => {
-    const tag = tagSelect.value;
-    if(!tag) return;
-    const user = localStorage.getItem('user');
-    const timeStr = new Date().toLocaleTimeString();
-    const siteName = CONTRACT_SITES.find(s => s.code === localStorage.getItem('patrolSite'))?.name || 'Unknown Site';
-    const msg = `Tag "${tag}" scanned by ${user} at ${siteName} (${timeStr})`;
-    logs.unshift({type: 'scan', user, text: msg, ts: new Date()});
-    saveLogs();
-    scanResult.textContent = msg;
-    notify("Tag scanned!");
-  };
-}
-
-// REPORT SCREEN
-function reportScreen(){
-  const user = localStorage.getItem('user');
-  const patrolSiteCode = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
-
-  appEl.innerHTML = `
-    <div class="app-bar">Submit Report</div>
-    <div class="content">
-      <label for="reportType"><strong>Report Type</strong></label>
-      <select id="reportType">
-        <option disabled selected>Select Type</option>
-        <option>Incident</option>
-        <option>Hazard</option>
-        <option>Maintenance</option>
-        <option>Other</option>
-      </select>
-
-      <label for="reportLocation"><strong>Location (optional)</strong></label>
-      <input id="reportLocation" type="text" placeholder="e.g. Gate 3, Lobby" value="${patrolSiteCode}" />
-
-      <label for="reportDetails"><strong>Details</strong></label>
-      <textarea id="reportDetails" rows="5" placeholder="Describe the report..."></textarea>
-
-      <button id="submitReport" disabled>Submit</button>
-      <div id="reportMsg" style="margin-top:10px;font-weight:600;color:#3a5998;"></div>
-    </div>
-  `;
-
-  const reportType = document.getElementById('reportType');
-  const reportLocation = document.getElementById('reportLocation');
-  const reportDetails = document.getElementById('reportDetails');
-  const submitBtn = document.getElementById('submitReport');
-  const reportMsg = document.getElementById('reportMsg');
-
-  function checkEnable(){
-    submitBtn.disabled = !reportType.value || reportDetails.value.trim().length === 0;
-  }
-  reportType.onchange = checkEnable;
-  reportDetails.oninput = checkEnable;
-
-  submitBtn.onclick = () => {
-    const type = reportType.value;
-    const loc = reportLocation.value.trim();
-    const details = reportDetails.value.trim();
-    if(!type || !details) return;
-    const timeStr = new Date().toLocaleTimeString();
-    const msg = `[${type}] Report by ${user}${loc ? ' @'+loc : ''}: ${details} (${timeStr})`;
-    logs.unshift({type:'report', user, text: msg, ts: new Date()});
-    saveLogs();
-    reportMsg.textContent = 'Report submitted.';
-    // Reset fields
-    reportType.value = "";
-    reportLocation.value = patrolSiteCode;
-    reportDetails.value = "";
-    submitBtn.disabled = true;
-    notify("Report submitted.");
-  };
-}
-
-// MESSAGE BOARD SCREEN
-function messageScreen(){
-  appEl.innerHTML = `
-    <div class="app-bar">Messages</div>
-    <div class="content message-board" id="msgBoard" tabindex="0" aria-live="polite" aria-atomic="true"></div>
-  `;
-
-  const mb = document.getElementById('msgBoard');
-  if(logs.length === 0){
-    mb.innerHTML = "<p>No messages yet.</p>";
-  } else {
-    mb.innerHTML = logs.map(e => {
-      return `
-        <div class="entry">
-          <strong>[${e.type.toUpperCase()}] ${e.user}</strong>
-          <div>${e.text}</div>
-          <div class="ts">${e.ts.toLocaleTimeString()}</div>
-        </div>
-      `;
-    }).join('');
-  }
-}
-
-// RANDOM ALARM GENERATION
-function scheduleAlarm(){
-  clearTimeout(alarmTimer);
-  alarmTimer = setTimeout(() => {
-    const msg = ALARM_MSGS[Math.floor(Math.random() * ALARM_MSGS.length)];
-    const user = localStorage.getItem('user') || "System";
-    const timeStr = new Date().toLocaleTimeString();
-    const txt = `🚨 ALERT: ${msg} (${timeStr})`;
-    logs.unshift({type:'alarm', user, text: txt, ts: new Date()});
-    saveLogs();
-    notify("ALARM: " + msg);
-    scheduleAlarm();
-  }, (3 + Math.random() * 4) * 60 * 1000); // every 3 to 7 minutes
-}
-
-// CHECK-IN PROMPT
-function scheduleCheckin(){
-  clearTimeout(checkinTimer);
-  checkinTimer = setTimeout(() => {
-    const user = localStorage.getItem('user');
-    notify("Check-in: Are you OK?");
-    // Use confirm with 1-minute timeout fallback:
-    let responded = false;
-    const checkinTimeout = setTimeout(() => {
-      if(!responded){
-        logs.unshift({type:'panic', user, text: `❌ Missed check-in at ${new Date().toLocaleTimeString()}`, ts: new Date()});
-        saveLogs();
-        notify("Missed check-in! Alert sent.");
-      }
-    }, 60 * 1000); // 1 minute to respond
-
-    const ok = confirm("Check-in alert:\nAre you OK? (Please click OK within 1 minute)");
-    responded = true;
-    clearTimeout(checkinTimeout);
-
-    if(ok){
-      logs.unshift({type:'checkin', user, text: `✅ Check-in OK at ${new Date().toLocaleTimeString()}`, ts: new Date()});
-      saveLogs();
-      notify("Check-in OK received.");
-    } else {
-      logs.unshift({type:'panic', user, text: `❌ Declined check-in at ${new Date().toLocaleTimeString()}`, ts: new Date()});
-      saveLogs();
-      notify("Declined check-in. Alert sent.");
+function messageScreen() {
+  pushScreen(homeScreen);
+  logsRef.once("value", snap => {
+    let html = `<h3>Message Board</h3>`;
+    const entries = snap.val();
+    for (let key in entries) {
+      const e = entries[key];
+      html += `<div class="entry">
+        <strong>${e.user}</strong>: ${e.type === "scan" ? `scanned Tag ${e.tag} at ${e.site} (${e.route})` : 
+        e.type === "report" ? `submitted a ${e.reportType} report: "${e.description}"` :
+        e.type === "panic" ? `🚨 PANIC issued from ${e.location}` :
+        e.type === "checkin" ? `✅ Responded to check-in` : "Unknown"}
+        <div class="ts">${e.time}</div>
+      </div>`;
     }
-    scheduleAlarm();
-    scheduleCheckin();
-  }, 5 * 60 * 1000); // every 5 minutes
+    showScreen(html);
+  });
 }
 
-btnBack.onclick = goBack;
-btnHome.onclick = goHome;
-btnMenu.onclick = () => alert("Menu options coming soon.");
+function triggerPanic() {
+  const location = prompt("Enter your current location:");
+  flashOverlay.style.display = "block";
+  setTimeout(() => flashOverlay.style.display = "none", 1500);
 
-function init(){
-  if(!localStorage.getItem('user')){
-    showScreen(loginScreen);
-  } else {
-    showScreen(homeScreen);
+  const entry = {
+    type: "panic",
+    user: currentUser,
+    location,
+    time: now()
+  };
+  logsRef.push(entry);
+  guardsRef.child(currentUser).update({ status: "Panic", lastSeen: now(), location });
+
+  panicBanner.style.display = "block";
+}
+
+function statusScreen() {
+  pushScreen(homeScreen);
+  showScreen(`
+    <h3>Set Status</h3>
+    <select id="statusSelect">
+      <option value="Active">Active</option>
+      <option value="Armoured Transport">Armoured Transport</option>
+      <option value="Break">Break</option>
+    </select>
+    <label>Location:</label>
+    <input id="statusLoc" placeholder="Where are you?" />
+    <button onclick="updateStatus()">Update</button>
+  `);
+}
+
+function updateStatus() {
+  const status = document.getElementById("statusSelect").value;
+  const location = document.getElementById("statusLoc").value.trim();
+  currentStatus = status;
+  guardsRef.child(currentUser).update({
+    status,
+    lastSeen: now(),
+    location
+  });
+  if (status !== "Panic") panicBanner.style.display = "none";
+  alert("Status updated.");
+  goHome();
+}
+  // Simulated random alarms
+const simulatedAlarms = [
+  "Suspicious customer reported near entrance.",
+  "Residential alarm triggered at back lot.",
+  "Loitering near fence line.",
+  "Loud noise reported in parking structure.",
+  "Unauthorized person near restricted zone."
+];
+
+function simulateAlarm() {
+  const msg = simulatedAlarms[Math.floor(Math.random() * simulatedAlarms.length)];
+  const entry = {
+    type: "alarm",
+    user: "System",
+    description: msg,
+    time: now()
+  };
+  logsRef.push(entry);
+  inAppNotify("🚨 " + msg);
+}
+
+// Check-in every 5 minutes
+function startCheckInCycle() {
+  setInterval(() => {
+    const checkTime = Date.now();
+    const promptId = "check_" + checkTime;
+    inAppNotify("Check-in required. Tap below to confirm.", "✅ Check In", () => {
+      const entry = {
+        type: "checkin",
+        user: currentUser,
+        time: now()
+      };
+      logsRef.push(entry);
+    });
+
+    setTimeout(() => {
+      if (currentStatus !== "Panic") {
+        triggerPanic();
+      }
+    }, 60000); // escalate after 1 minute
+  }, checkInInterval);
+}
+
+// In-app notification helper
+function inAppNotify(msg, actionText = null, action = null) {
+  const note = document.createElement("div");
+  note.className = "notify";
+  note.innerHTML = msg;
+  if (actionText && action) {
+    const btn = document.createElement("button");
+    btn.textContent = actionText;
+    btn.style.marginTop = "10px";
+    btn.onclick = () => {
+      action();
+      note.remove();
+    };
+    note.appendChild(btn);
   }
-  scheduleAlarm();
-  scheduleCheckin();
+  app.prepend(note);
+  setTimeout(() => note.remove(), 10000);
 }
 
-init();
+// Reset system via URL param
+function checkReset() {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("reset") === "true") {
+    logsRef.remove();
+    alert("All logs cleared.");
+  }
+}
+
+// Run on load
+window.onload = () => {
+  loginScreen();
+  checkReset();
+  setInterval(simulateAlarm, Math.random() * 180000 + 180000); // every 3–6 min
+  startCheckInCycle();
+};
 </script>
 </body>
 </html>
