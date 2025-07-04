@@ -6,117 +6,105 @@
 <title>VSS Patrol App</title>
 <style>
   @import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
-
   * {
     box-sizing: border-box;
   }
-  body, html {
-    margin: 0; padding: 0; height: 100%;
+  body,
+  html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
     font-family: 'Roboto', sans-serif;
-    background: #e0e0e0;
+    background: #f0f0f0;
     color: #222;
-    user-select: none;
   }
-
   #device {
     width: 360px;
-    max-width: 100vw;
     height: 640px;
-    max-height: 90vh;
-    border: 2px solid #555;
+    border: 2px solid #888;
     border-radius: 16px;
     margin: 20px auto;
     position: relative;
     overflow: hidden;
-    background: #f4f4f4;
+    background: #fafafa;
     box-shadow:
-      inset 0 0 10px #aaa,
-      0 10px 30px rgba(0,0,0,0.3);
+      inset 0 0 10px #bbb,
+      0 10px 30px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
   }
-
-  /* Status bar */
   .status-bar {
     height: 24px;
     background: #333;
-    color: #bbb;
+    color: #ccc;
     padding: 0 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    text-shadow: 0 1px 0 #000;
+    text-shadow: 0 1px 0 #0006;
     font-weight: 500;
     font-family: monospace;
     user-select: none;
   }
-
-  /* Screen container */
   #screen {
     flex: 1;
-    background: #fafafa;
-    color: #222;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    background: #fff;
+    color: #222;
   }
-
-  /* App bar */
-  .app-bar {
-    background: #3a5998;
-    padding: 12px 16px;
-    color: #fff;
-    font-weight: 600;
-    font-size: 18px;
-    text-shadow: 0 1px 2px #000a;
-    letter-spacing: 0.03em;
-    box-shadow: inset 0 -2px 4px #2c4674;
-    user-select: none;
-  }
-
-  /* Content scroll area */
-  .content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  /* Navigation bar */
   .nav-bar {
     height: 56px;
-    background: #222;
+    background: #444;
     display: flex;
-    box-shadow: inset 0 1px 0 #444;
+    box-shadow: inset 0 1px 0 #666;
   }
   .nav-bar button {
     flex: 1;
     border: none;
-    background: #222;
-    color: #ccc;
+    background: #444;
+    color: #ddd;
     font-size: 24px;
     outline: none;
     cursor: pointer;
     user-select: none;
     transition: background 0.2s ease;
     font-weight: 700;
+    text-shadow: 0 1px 0 #0006;
   }
   .nav-bar button:active {
-    background: #555;
-    color: #eee;
+    background: #666;
+    color: #fff;
   }
-
-  /* Home grid */
+  .app-bar {
+    background: #1976d2;
+    padding: 12px 16px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 18px;
+    text-shadow: 0 1px 2px #0b4a86;
+    letter-spacing: 0.03em;
+    box-shadow: inset 0 -2px 4px #0b4a86;
+    user-select: none;
+  }
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    background: #fafafa;
+    color: #222;
+  }
   .home-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    margin-top: 10px;
+    padding: 10px 0;
   }
   .app-icon {
-    background: #fafafa;
-    border: 1px solid #999;
+    background: #eee;
+    border: 1px solid #bbb;
     border-radius: 14px;
     height: 90px;
     display: flex;
@@ -124,7 +112,7 @@
     align-items: center;
     justify-content: center;
     color: #333;
-    font-size: 20px;
+    font-size: 16px;
     box-shadow: 0 1px 4px #bbb;
     cursor: pointer;
     user-select: none;
@@ -136,13 +124,16 @@
     background: #d9e3f0;
     outline: none;
   }
-
-  /* Forms */
-  input, select, textarea, button {
+  input,
+  select,
+  textarea,
+  button {
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
   }
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     width: 100%;
     margin: 8px 0 12px;
     padding: 8px 10px;
@@ -150,21 +141,24 @@
     border: 1.5px solid #aaa;
     outline: none;
     transition: border-color 0.3s ease;
-    color: #111;
+    color: #222;
+    background: #fff;
   }
-  input:focus, select:focus, textarea:focus {
-    border-color: #3a5998;
-    box-shadow: 0 0 8px #3a5998aa;
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 8px #1976d2aa;
   }
   button {
-    background: #3a5998;
+    background: #1976d2;
     color: white;
     border: none;
     padding: 10px 14px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 700;
-    box-shadow: 0 3px 8px #30518c;
+    box-shadow: 0 3px 8px #145ea8;
     user-select: none;
   }
   button:disabled {
@@ -173,10 +167,8 @@
     box-shadow: none;
   }
   button:active:not(:disabled) {
-    background: #2a3f6d;
+    background: #145ea8;
   }
-
-  /* Notifications */
   .notify {
     background: #ffeb3b;
     color: #111;
@@ -186,148 +178,93 @@
     font-size: 13px;
     font-weight: 600;
     box-shadow: 0 0 6px #c1b702;
-    user-select: none;
   }
-
-  /* Message board */
-  .message-board .entry {
-    background: #fff;
-    border: 1px solid #ddd;
+  .message-board {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .message-board .messages {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
+    padding: 8px 12px;
+    background: #fff;
     font-size: 13px;
     color: #222;
-    box-shadow: 0 1px 5px #bbb;
+    box-shadow: inset 0 1px 3px #ddd;
+  }
+  .message-board .entry {
+    margin-bottom: 12px;
+    padding: 6px 8px;
+    background: #e0e7ff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px #b0b8d9;
+  }
+  .message-board .entry.panic {
+    background: #ffcccc;
+    box-shadow: 0 1px 3px #d94a4a;
+  }
+  .message-board .entry.scan {
+    background: #ccffcc;
+    box-shadow: 0 1px 3px #4ad94a;
+  }
+  .message-board .entry.alarm {
+    background: #fff5cc;
+    box-shadow: 0 1px 3px #d9d24a;
   }
   .message-board .entry strong {
     display: block;
     font-size: 14px;
     margin-bottom: 4px;
-    color: #3a5998;
-    user-select: text;
+    color: #1976d2;
   }
   .message-board .entry .ts {
     opacity: 0.6;
     font-size: 11px;
-    margin-top: 6px;
+    margin-top: 4px;
     font-family: monospace;
-    user-select: text;
   }
-
-  /* Scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #eee;
-  }
-  ::-webkit-scrollbar-thumb {
-    background-color: #3a5998;
-    border-radius: 20px;
-    border: 3px solid #eee;
-  }
-
-  /* Modal overlay */
-  #modalOverlay {
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  }
-  #modal {
-    background: #fff;
-    border-radius: 12px;
-    max-width: 320px;
-    width: 90%;
-    padding: 20px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    font-size: 14px;
-    color: #222;
-  }
-  #modal h2 {
-    margin-top: 0;
-    font-weight: 700;
-    color: #3a5998;
-    text-align: center;
-  }
-  #modal p {
-    margin: 12px 0;
-    line-height: 1.4;
-  }
-  #modal input[type="text"],
-  #modal textarea {
-    width: 100%;
-    padding: 8px;
-    margin-top: 6px;
-    border-radius: 6px;
-    border: 1.5px solid #aaa;
-    font-size: 14px;
-    resize: vertical;
-  }
-  #modalButtons {
-    margin-top: 20px;
+  .message-board form {
     display: flex;
-    justify-content: flex-end;
-    gap: 12px;
+    margin-top: 8px;
   }
-  #modalButtons button {
-    background: #3a5998;
-    color: white;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 700;
-    box-shadow: 0 3px 8px #30518c;
-    user-select: none;
+  .message-board form input[type="text"] {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 6px 0 0 6px;
+    border: 1.5px solid #aaa;
+    border-right: none;
   }
-  #modalButtons button.cancel {
-    background: #aaa;
-    box-shadow: none;
+  .message-board form button {
+    border-radius: 0 6px 6px 0;
+    padding: 0 14px;
+    font-weight: 600;
   }
-  #modalButtons button.cancel:active {
-    background: #888;
+  label {
+    font-weight: 600;
   }
-
 </style>
 </head>
 <body>
-
-<div id="device" role="main" aria-label="VSS Patrol App">
-  <div class="status-bar" aria-live="polite" aria-atomic="true" aria-relevant="text">
-    <div class="left" id="statusTime">--:--</div>
-    <div class="right">🔋 85%</div>
+  <div id="device" role="main" aria-label="VSS Patrol App">
+    <div class="status-bar" aria-live="polite" aria-atomic="true" aria-relevant="text">
+      <div class="left" id="statusTime">--:--</div>
+      <div class="right">🔋 85%</div>
+    </div>
+    <div id="screen"><div id="app" tabindex="0"></div></div>
+    <div class="nav-bar" role="navigation" aria-label="Navigation Buttons">
+      <button id="btnBack" aria-label="Back">◀</button>
+      <button id="btnHome" aria-label="Home">⏺</button>
+      <button id="btnMenu" aria-label="Menu">☰</button>
+    </div>
   </div>
-  <div id="screen">
-    <div id="app" tabindex="0"></div>
-  </div>
-  <div class="nav-bar" role="navigation" aria-label="Navigation Buttons">
-    <button id="btnBack" aria-label="Back">◀</button>
-    <button id="btnHome" aria-label="Home">⏺</button>
-    <button id="btnMenu" aria-label="Menu">☰</button>
-  </div>
-</div>
 
-<!-- Modal container -->
-<div id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-  <div id="modal">
-    <h2 id="modalTitle"></h2>
-    <p id="modalDesc"></p>
-    <div id="modalInputs"></div>
-    <div id="modalButtons"></div>
-  </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 <script>
 (() => {
-  // Firebase configuration — replace with your actual config if different
   const firebaseConfig = {
     apiKey: "AIzaSyCyQWxW-3gsvN7zI4YYIVw1sUVOreBCdbc",
     authDomain: "project-be13b.firebaseapp.com",
@@ -337,18 +274,15 @@
     messagingSenderId: "724859412186",
     appId: "1:724859412186:web:2a5ef9d65d7c307c870fe3"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const logsRef = db.ref("logs");
   const guardsRef = db.ref("guards");
 
-  // Variables
   const appEl = document.getElementById('app');
   const btnBack = document.getElementById('btnBack');
   const btnHome = document.getElementById('btnHome');
   const btnMenu = document.getElementById('btnMenu');
-  const statusTimeEl = document.getElementById('statusTime');
 
   const CONTRACT_SITES = [
     {name: "Vancouver General Hospital", code:"VGH"},
@@ -362,14 +296,11 @@
     {name: "Lake View HOA", code:"HOA"},
     {name: "Maple Street BIA", code:"BIA"}
   ];
-
   const PATROL_TYPES = ['Outdoor', 'Indoor'];
-
   const TAGS = {
     Outdoor: ["Tag 1", "Tag 2", "Tag 3", "Tag 4", "Tag 5"],
     Indoor: ["Tag 6", "Tag 7", "Tag 8", "Tag 9", "Tag 10"]
   };
-
   const ALARM_MSGS = [
     "Motion detected near Loading Dock",
     "Unauthorized entry at Main Gate",
@@ -380,66 +311,51 @@
     "Camera offline at East Corridor"
   ];
 
-  let logs = [];  // Array of all log entries, synced with Firebase
+  let logs = [];
+  let guards = {};
   let notifications = [];
   let screenStack = [];
 
   let alarmTimer = null;
   let checkinTimer = null;
 
-  // Modal elements
-  const modalOverlay = document.getElementById('modalOverlay');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalDesc = document.getElementById('modalDesc');
-  const modalInputs = document.getElementById('modalInputs');
-  const modalButtons = document.getElementById('modalButtons');
-
-  // Utility: Show modal dialog (title, message, inputs HTML, buttons array)
-  // buttons: [{text:"OK",class:"",handler:function},...]
-  function showModal(title, desc, inputsHtml, buttons){
-    modalTitle.textContent = title;
-    modalDesc.textContent = desc;
-    modalInputs.innerHTML = inputsHtml || '';
-    modalButtons.innerHTML = '';
-    buttons.forEach(btn=>{
-      const b = document.createElement('button');
-      b.textContent = btn.text;
-      if(btn.class) b.classList.add(btn.class);
-      b.onclick = () => {
-        hideModal();
-        btn.handler();
-      };
-      modalButtons.appendChild(b);
-    });
-    modalOverlay.style.display = 'flex';
-    // Focus first input if any
-    const firstInput = modalInputs.querySelector('input, textarea, select, button');
-    if(firstInput) firstInput.focus();
+  function saveLocal() {
+    localStorage.setItem('user', currentUser);
+    localStorage.setItem('patrolSite', currentPatrolSite);
+    localStorage.setItem('patrolType', currentPatrolType);
   }
-  function hideModal(){
-    modalOverlay.style.display = 'none';
+  function loadLocal() {
+    currentUser = localStorage.getItem('user') || '';
+    currentPatrolSite = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
+    currentPatrolType = localStorage.getItem('patrolType') || 'Outdoor';
   }
 
-  // Save logs locally and sync to Firebase
-  function saveLogs(){
+  let currentUser = '';
+  let currentPatrolSite = '';
+  let currentPatrolType = '';
+
+  function saveLogsLocal(){
     localStorage.setItem('logs', JSON.stringify(logs));
-    // Sync to firebase
-    logsRef.set(logs);
   }
-
-  // Add new log entry and update UI + sync
-  function addLog(type, user, text){
-    const entry = {type, user, text, ts: new Date().toISOString()};
-    logs.unshift(entry);
-    saveLogs();
-    notify(`New log: ${type.toUpperCase()}`);
-    // Update message board if visible
-    if(screenStack.length && screenStack[screenStack.length-1] === messageScreen){
-      renderMessages();
+  function loadLogsLocal(){
+    try {
+      logs = JSON.parse(localStorage.getItem('logs')) || [];
+    } catch {
+      logs = [];
     }
   }
 
-  // Show notification banner inside app
+  function saveGuardsLocal() {
+    localStorage.setItem('guards', JSON.stringify(guards));
+  }
+  function loadGuardsLocal() {
+    try {
+      guards = JSON.parse(localStorage.getItem('guards')) || {};
+    } catch {
+      guards = {};
+    }
+  }
+
   function notify(msg){
     notifications.unshift(msg);
     const n = document.createElement('div');
@@ -449,40 +365,72 @@
     setTimeout(() => n.remove(), 6000);
   }
 
-  // Show a screen by pushing function onto stack
+  const p = new URL(location).searchParams;
+  if(p.get('reset') === 'true'){
+    logsRef.remove();
+    guardsRef.once('value').then(snapshot => {
+      const allGuards = snapshot.val() || {};
+      Object.keys(allGuards).forEach(name => {
+        guardsRef.child(name).update({
+          status: 'Active',
+          location: 'Unknown',
+          lastSeen: new Date().toISOString()
+        });
+      });
+    });
+    localStorage.clear();
+    alert("App and guard statuses reset.");
+    location.href = location.pathname;
+  }
+
   function showScreen(screenFunc){
     screenStack.push(screenFunc);
     screenFunc();
   }
-
-  // Go back to previous screen
   function goBack(){
     if(screenStack.length > 1){
       screenStack.pop();
-      const prev = screenStack[screenStack.length -1];
-      prev();
+      screenStack[screenStack.length - 1]();
     }
   }
-
-  // Go home - reset stack to just home screen
   function goHome(){
     screenStack.splice(1);
-    if(screenStack.length===0) screenStack.push(homeScreen);
     screenStack[0]();
   }
 
-  // UI Update for status time every second
-  setInterval(() => {
-    const now = new Date();
-    statusTimeEl.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  }, 1000);
+  btnBack.onclick = () => { goBack(); };
+  btnHome.onclick = () => { goHome(); };
+  btnMenu.onclick = () => { showScreen(guardStatusScreen); };
 
-  // --- Screen: Login ---
+  logsRef.on('value', snapshot => {
+    const data = snapshot.val();
+    logs = [];
+    if(data) {
+      Object.values(data).forEach(entry => {
+        entry.ts = new Date(entry.ts);
+        logs.push(entry);
+      });
+      logs.sort((a,b) => b.ts - a.ts);
+    }
+    saveLogsLocal();
+    if(screenStack[screenStack.length-1] === messageScreen) {
+      messageScreen();
+    }
+  });
+
+  guardsRef.on('value', snapshot => {
+    guards = snapshot.val() || {};
+    saveGuardsLocal();
+    if(screenStack[screenStack.length-1] === homeScreen) {
+      homeScreen();
+    }
+  });
+
   function loginScreen(){
     appEl.innerHTML = `
       <div class="app-bar">Login</div>
       <div class="content">
-        <input id="username" placeholder="Guard name or ID" autocomplete="off" aria-label="Enter guard name or ID" />
+        <input id="username" placeholder="Guard name or ID" autocomplete="off" aria-label="Guard name or ID" />
         <button id="loginBtn" disabled>Login</button>
       </div>
     `;
@@ -495,401 +443,383 @@
     btn.onclick = () => {
       const user = input.value.trim();
       if(user){
-        localStorage.setItem('user', user);
-        if(!localStorage.getItem('patrolSite')) localStorage.setItem('patrolSite', CONTRACT_SITES[0].code);
-        if(!localStorage.getItem('patrolType')) localStorage.setItem('patrolType', 'Outdoor');
-        // Register guard presence to Firebase
-        guardsRef.child(user).set({
-          lastActive: new Date().toISOString(),
-          status: 'On Duty'
+        currentUser = user;
+        saveLocal();
+        if(!currentPatrolSite) currentPatrolSite = CONTRACT_SITES[0].code;
+        if(!currentPatrolType) currentPatrolType = 'Outdoor';
+        guardsRef.child(currentUser).set({
+          status: 'Active',
+          location: 'Unknown',
+          lastSeen: new Date().toISOString()
         });
         showScreen(homeScreen);
       }
     };
   }
 
-  // --- Screen: Home ---
   function homeScreen(){
-    const user = localStorage.getItem('user') || 'Unknown Guard';
+    const guardStatus = guards[currentUser] || {};
+    const statusText = guardStatus.status || "Unknown";
+    const locationText = guardStatus.location || "Unknown";
+
     appEl.innerHTML = `
       <div class="app-bar">VSS Patrol Home</div>
       <div class="content">
-        <div><strong>Hello, ${user}</strong></div>
-        <div class="home-grid" role="list" aria-label="Main navigation">
+        <div><strong>Hello, ${currentUser}</strong></div>
+        <div>Status: <em>${statusText}</em></div>
+        <div>Location: <em>${locationText}</em></div>
+        <div class="home-grid" role="list">
           <div role="listitem" tabindex="0" class="app-icon" id="openPatrol">🛰️ Patrol</div>
-          <div role="listitem" tabindex="0" class="app-icon" id="openMessages">💬 Message Board</div>
-          <div role="listitem" tabindex="0" class="app-icon" id="openReports">📝 Reports</div>
-          <div role="listitem" tabindex="0" class="app-icon" id="openStatus">👮 Guard Status</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="openReport">📝 Report</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="openMsgs">📋 Message Board</div>
+          <div role="listitem" tabindex="0" class="app-icon" id="openPanic">🚨 Panic Alert</div>
         </div>
       </div>
     `;
 
     document.getElementById('openPatrol').onclick = () => showScreen(patrolScreen);
-    document.getElementById('openMessages').onclick = () => showScreen(messageScreen);
-    document.getElementById('openReports').onclick = () => showScreen(reportScreen);
-    document.getElementById('openStatus').onclick = () => showScreen(statusScreen);
+    document.getElementById('openReport').onclick = () => showScreen(reportScreen);
+    document.getElementById('openMsgs').onclick = () => showScreen(messageScreen);
+    document.getElementById('openPanic').onclick = () => showScreen(panicScreen);
 
-    // Keyboard accessibility
-    ['openPatrol','openMessages','openReports','openStatus'].forEach(id => {
+    ['openPatrol','openReport','openMsgs','openPanic'].forEach(id => {
       const el = document.getElementById(id);
-      el.onkeypress = e => {
-        if(e.key === 'Enter' || e.key === ' ') el.click();
+      el.onkeydown = e => {
+        if(e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
       };
     });
   }
 
-  // --- Screen: Patrol ---
   function patrolScreen(){
-    const user = localStorage.getItem('user') || 'Unknown Guard';
-    const patrolSite = localStorage.getItem('patrolSite') || CONTRACT_SITES[0].code;
-    const patrolType = localStorage.getItem('patrolType') || 'Outdoor';
-    const tags = TAGS[patrolType] || [];
-
-    let tagButtonsHtml = tags.map(t => `<button class="tag-btn" data-tag="${t}">${t}</button>`).join('');
-
-    let patrolSiteOptions = CONTRACT_SITES.map(site =>
-      `<option value="${site.code}" ${site.code === patrolSite ? 'selected' : ''}>${site.name}</option>`).join('');
-
-    let patrolTypeOptions = PATROL_TYPES.map(pt =>
-      `<option value="${pt}" ${pt === patrolType ? 'selected' : ''}>${pt}</option>`).join('');
-
     appEl.innerHTML = `
-      <div class="app-bar">Patrol</div>
-      <div class="content">
-        <label for="siteSelect">Patrol Site:</label>
-        <select id="siteSelect" aria-label="Select patrol site">${patrolSiteOptions}</select>
-
-        <label for="patrolTypeSelect">Patrol Type:</label>
-        <select id="patrolTypeSelect" aria-label="Select patrol type">${patrolTypeOptions}</select>
-
-        <div><strong>Tap a tag to scan:</strong></div>
-        <div id="tagButtons" style="display:flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
-          ${tagButtonsHtml}
-        </div>
-
-        <button id="btnPanic" style="margin-top: 20px; background:#d93025;">⚠️ Panic Alert</button>
+      <div class="app-bar">Patrol Tags</div>
+      <div class="content" role="list" aria-label="Patrol tags">
+        <label for="siteSelect">Contract Site</label>
+        <select id="siteSelect" aria-describedby="siteHelp" aria-label="Select contract site">
+          ${CONTRACT_SITES.map(s => `<option value="${s.code}"${s.code === currentPatrolSite ? ' selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+        <label for="patrolTypeSelect">Patrol Type</label>
+        <select id="patrolTypeSelect" aria-label="Select patrol type">
+          ${PATROL_TYPES.map(t => `<option${t === currentPatrolType ? ' selected' : ''}>${t}</option>`).join('')}
+        </select>
+        <div id="tagList" role="list" style="margin-top: 10px;"></div>
       </div>
     `;
 
-    document.getElementById('siteSelect').onchange = e => {
-      localStorage.setItem('patrolSite', e.target.value);
+    const siteSelect = document.getElementById('siteSelect');
+    const patrolTypeSelect = document.getElementById('patrolTypeSelect');
+    const tagList = document.getElementById('tagList');
+
+    function renderTags() {
+      const type = patrolTypeSelect.value;
+      const tags = TAGS[type];
+      tagList.innerHTML = tags.map(tag => `
+        <button class="app-icon" style="font-size:14px; padding: 8px 10px; margin: 4px;" aria-label="Scan ${tag}">${tag}</button>
+      `).join('');
+      [...tagList.children].forEach(btn => {
+        btn.onclick = () => {
+          logEvent({
+            type: 'tagScan',
+            user: currentUser,
+            site: siteSelect.value,
+            patrolType: type,
+            tag: btn.textContent,
+            ts: new Date().toISOString()
+          });
+          notify(`Tag scanned: ${btn.textContent}`);
+        };
+      });
+    }
+
+    siteSelect.onchange = () => {
+      currentPatrolSite = siteSelect.value;
+      saveLocal();
+    };
+    patrolTypeSelect.onchange = () => {
+      currentPatrolType = patrolTypeSelect.value;
+      saveLocal();
+      renderTags();
     };
 
-    document.getElementById('patrolTypeSelect').onchange = e => {
-      localStorage.setItem('patrolType', e.target.value);
-      // Reload patrolScreen to update tags
-      patrolScreen();
-    };
+    renderTags();
+  }
 
-    // Tag scan handler
-    document.querySelectorAll('.tag-btn').forEach(btn => {
-      btn.onclick = () => {
-        const tag = btn.dataset.tag;
-        addLog('scan', user, `Scanned ${tag} at site ${localStorage.getItem('patrolSite') || 'Unknown'}`);
-      };
+  function reportScreen(){
+    appEl.innerHTML = `
+      <div class="app-bar">Hazard Report</div>
+      <div class="content">
+        <textarea id="reportInput" rows="6" placeholder="Describe hazard or incident..." aria-label="Hazard or incident description"></textarea>
+        <button id="submitReportBtn" disabled>Submit Report</button>
+      </div>
+    `;
+    const input = document.getElementById('reportInput');
+    const btn = document.getElementById('submitReportBtn');
+    input.focus();
+    input.addEventListener('input', () => {
+      btn.disabled = input.value.trim().length === 0;
     });
-
-    document.getElementById('btnPanic').onclick = () => {
-      showPanicModal(user);
+    btn.onclick = () => {
+      const msg = input.value.trim();
+      if(msg){
+        logEvent({
+          type: 'report',
+          user: currentUser,
+          site: currentPatrolSite,
+          message: msg,
+          ts: new Date().toISOString()
+        });
+        input.value = '';
+        btn.disabled = true;
+        notify('Report submitted.');
+      }
     };
   }
 
-  // --- Modal: Panic alert ---
-  function showPanicModal(user){
-    showModal(
-      "Panic Alert",
-      "Please describe your current location and situation:",
-      `<textarea id="panicInput" rows="4" placeholder="E.g. Near main entrance, suspect running"></textarea>`,
-      [
-        {
-          text: "Send Panic",
-          handler: () => {
-            const desc = document.getElementById('panicInput').value.trim();
-            if(!desc){
-              notify("Panic alert requires a description!");
-              showPanicModal(user);
-              return;
-            }
-            addLog('panic', user, desc);
-            notify("Panic alert sent!");
-          }
-        },
-        {
-          text: "Cancel",
-          class: "cancel",
-          handler: () => {
-            /* do nothing */
-          }
-        }
-      ]
-    );
-  }
-
-  // --- Screen: Message Board ---
   function messageScreen(){
     appEl.innerHTML = `
       <div class="app-bar">Message Board</div>
-      <div class="content message-board" id="messagesDiv" tabindex="0" aria-label="Message board logs">
+      <div class="content message-board" role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions">
+        <div class="messages" id="messageList" tabindex="0" aria-label="Messages list"></div>
+        <form id="messageForm" aria-label="Send message form" autocomplete="off">
+          <input type="text" id="messageInput" placeholder="Type message here..." aria-label="Message input" />
+          <button type="submit" disabled>Send</button>
+        </form>
       </div>
     `;
+
+    const messageList = document.getElementById('messageList');
+    const messageInput = document.getElementById('messageInput');
+    const messageForm = document.getElementById('messageForm');
+    const sendBtn = messageForm.querySelector('button');
+
+    messageInput.addEventListener('input', () => {
+      sendBtn.disabled = messageInput.value.trim().length === 0;
+    });
+
+    messageForm.onsubmit = e => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if(!text) return;
+      logEvent({
+        type: 'chat',
+        user: currentUser,
+        site: currentPatrolSite,
+        message: text,
+        ts: new Date().toISOString()
+      });
+      messageInput.value = '';
+      sendBtn.disabled = true;
+    };
+
+    function renderMessages(){
+      if(logs.length === 0){
+        messageList.innerHTML = `<div>No messages yet.</div>`;
+        return;
+      }
+      const items = logs.map(log => {
+        const timeStr = new Date(log.ts).toLocaleString();
+        let content = '';
+        let cls = 'entry';
+        switch(log.type){
+          case 'tagScan':
+            cls += ' scan';
+            content = `<strong>Tag scanned by ${log.user}:</strong> ${log.tag} at ${log.site}`;
+            break;
+          case 'panic':
+            cls += ' panic';
+            content = `<strong>🚨 Panic Alert from ${log.user}!</strong> Location: ${log.location || 'Unknown'}`;
+            break;
+          case 'alarm':
+            cls += ' alarm';
+            content = `<strong>⚠️ Alarm:</strong> ${log.message} at ${log.site}`;
+            break;
+          case 'report':
+            content = `<strong>Report by ${log.user}:</strong> ${log.message}`;
+            break;
+          case 'chat':
+            content = `<strong>${log.user}:</strong> ${log.message}`;
+            break;
+          default:
+            content = JSON.stringify(log);
+        }
+        return `<div class="${cls}"><div>${content}</div><div class="ts">${timeStr}</div></div>`;
+      });
+      messageList.innerHTML = items.join('');
+      messageList.scrollTop = messageList.scrollHeight;
+    }
 
     renderMessages();
   }
 
-  // Render all logs in message board with icons and formatting
-  function renderMessages(){
-    const messagesDiv = document.getElementById('messagesDiv');
-    if(!messagesDiv) return;
-    messagesDiv.innerHTML = '';
-
-    logs.forEach(log => {
-      const entry = document.createElement('div');
-      entry.className = 'entry';
-      const ts = new Date(log.ts);
-      let prefix = '';
-      switch(log.type){
-        case 'message':
-          prefix = `<strong>${escapeHtml(log.user)}</strong>: `;
-          break;
-        case 'scan':
-          prefix = `📍 <em>${escapeHtml(log.user)}</em> scanned: `;
-          break;
-        case 'report':
-          prefix = `📝 <em>${escapeHtml(log.user)}</em> report: `;
-          break;
-        case 'panic':
-          prefix = `❗ <em>${escapeHtml(log.user)}</em> PANIC: `;
-          break;
-        case 'alarm':
-          prefix = `🚨 Alarm: `;
-          break;
-        case 'alert':
-          prefix = `⚠️ Alert: `;
-          break;
-        default:
-          prefix = '';
-      }
-      entry.innerHTML = `${prefix}${escapeHtml(log.text)}<div class="ts">${ts.toLocaleString()}</div>`;
-      messagesDiv.appendChild(entry);
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-
-  // --- Screen: Reports ---
-  // (Shows only reports for now, but can be expanded)
-  function reportScreen(){
+  function panicScreen(){
     appEl.innerHTML = `
-      <div class="app-bar">Reports</div>
-      <div class="content message-board" id="reportsDiv" tabindex="0" aria-label="Reports logs">
+      <div class="app-bar panic-alert">Panic Alert</div>
+      <div class="content">
+        <p style="font-weight:bold; color:#d32f2f; font-size:1.2em;">Send Panic Alert</p>
+        <p>Please enter your current location:</p>
+        <input type="text" id="panicLocation" placeholder="E.g. Main Gate, Lobby" aria-label="Current location" />
+        <button id="sendPanicBtn" disabled>Send Panic</button>
       </div>
     `;
-
-    const reportsDiv = document.getElementById('reportsDiv');
-    reportsDiv.innerHTML = '';
-
-    const reports = logs.filter(l => l.type === 'report');
-    if(reports.length === 0){
-      reportsDiv.innerHTML = '<p>No reports submitted yet.</p>';
-      return;
-    }
-
-    reports.forEach(log => {
-      const entry = document.createElement('div');
-      entry.className = 'entry';
-      const ts = new Date(log.ts);
-      entry.innerHTML = `📝 <strong>${escapeHtml(log.user)}</strong>: ${escapeHtml(log.text)}<div class="ts">${ts.toLocaleString()}</div>`;
-      reportsDiv.appendChild(entry);
+    const input = document.getElementById('panicLocation');
+    const btn = document.getElementById('sendPanicBtn');
+    input.focus();
+    input.addEventListener('input', () => {
+      btn.disabled = input.value.trim().length === 0;
     });
-  }
-
-  // --- Screen: Guard Status ---
-  // Shows guards currently online with last activity and status
-  function statusScreen(){
-    appEl.innerHTML = `
-      <div class="app-bar">Guard Status</div>
-      <div class="content" id="guardStatusList" tabindex="0" aria-label="List of guards and status"></div>
-    `;
-
-    const list = document.getElementById('guardStatusList');
-    list.innerHTML = '<p>Loading guard status...</p>';
-
-    guardsRef.once('value').then(snapshot => {
-      const guards = snapshot.val();
-      list.innerHTML = '';
-      if(!guards){
-        list.innerHTML = '<p>No guard data found.</p>';
-        return;
-      }
-      const now = Date.now();
-      Object.entries(guards).forEach(([guard, data]) => {
-        let lastActive = data.lastActive ? new Date(data.lastActive) : null;
-        let diffMins = lastActive ? Math.floor((now - lastActive.getTime())/60000) : null;
-        const status = data.status || "Unknown";
-        const lastSeen = lastActive ? lastActive.toLocaleTimeString() : "Never";
-
-        const guardDiv = document.createElement('div');
-        guardDiv.style.marginBottom = '14px';
-        guardDiv.innerHTML = `<strong>${escapeHtml(guard)}</strong><br/>
-          Status: ${escapeHtml(status)}<br/>
-          Last Active: ${escapeHtml(lastSeen)}${diffMins !== null ? ` (${diffMins} min ago)` : ''}`;
-        list.appendChild(guardDiv);
+    btn.onclick = () => {
+      const location = input.value.trim();
+      if(!location) return;
+      logEvent({
+        type: 'panic',
+        user: currentUser,
+        location,
+        ts: new Date().toISOString()
       });
-    });
+      notify('Panic alert sent!');
+      showScreen(homeScreen);
+    };
   }
 
-  // --- Utility: Escape HTML ---
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/[&<>"']/g, function(m) {
-      switch (m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-      }
-    });
+  function guardStatusScreen(){
+    const guard = guards[currentUser] || {};
+    appEl.innerHTML = `
+      <div class="app-bar">Your Status</div>
+      <div class="content">
+        <label for="statusSelect">Status</label>
+        <select id="statusSelect" aria-label="Select your status">
+          <option value="Active" ${guard.status === "Active" ? "selected" : ""}>Active</option>
+          <option value="On Break" ${guard.status === "On Break" ? "selected" : ""}>On Break</option>
+          <option value="Off Duty" ${guard.status === "Off Duty" ? "selected" : ""}>Off Duty</option>
+        </select>
+        <label for="locationInput">Location</label>
+        <input type="text" id="locationInput" aria-label="Enter your current location" value="${guard.location || ""}" placeholder="Current location" />
+        <button id="saveStatusBtn">Save</button>
+      </div>
+    `;
+    const statusSelect = document.getElementById('statusSelect');
+    const locationInput = document.getElementById('locationInput');
+    const saveBtn = document.getElementById('saveStatusBtn');
+
+    saveBtn.onclick = () => {
+      const newStatus = statusSelect.value;
+      const newLocation = locationInput.value.trim() || "Unknown";
+      guardsRef.child(currentUser).update({
+        status: newStatus,
+        location: newLocation,
+        lastSeen: new Date().toISOString()
+      });
+      notify("Status updated.");
+      showScreen(homeScreen);
+    };
   }
 
-  // --- Alarm simulation ---
-  function simulateAlarm(){
-    const alarmText = ALARM_MSGS[Math.floor(Math.random()*ALARM_MSGS.length)];
-    addLog('alarm', 'System', alarmText);
+  function logEvent(event) {
+    event.ts = new Date(event.ts || new Date()).toISOString();
+    logsRef.push(event);
   }
 
-  function scheduleAlarms(){
-    if(alarmTimer) clearTimeout(alarmTimer);
-    // Alarms random between 3-10 minutes
-    const ms = (3 + Math.random() * 7) * 60 * 1000;
-    alarmTimer = setTimeout(() => {
-      simulateAlarm();
-      scheduleAlarms();
-    }, ms);
-  }
-
-  // --- Check-in reminder ---
-  function scheduleCheckIn(){
-    if(checkinTimer) clearTimeout(checkinTimer);
-    // Every 5 minutes for check-in prompt
+  function startCheckInTimer() {
+    clearTimeout(checkinTimer);
     checkinTimer = setTimeout(() => {
-      if(screenStack.length){
-        showCheckInModal();
-      }
-      scheduleCheckIn();
+      promptCheckIn(60);
     }, 5 * 60 * 1000);
   }
 
-  function showCheckInModal(){
-    showModal(
-      "Check-in Reminder",
-      "Are you okay? Please confirm you're on patrol and safe.",
-      '',
-      [
-        {
-          text: "Yes, I'm okay",
-          handler: () => {
-            const user = localStorage.getItem('user') || 'Unknown Guard';
-            addLog('message', user, "Check-in confirmed.");
-          }
-        },
-        {
-          text: "No response",
-          class: "cancel",
-          handler: () => {
-            const user = localStorage.getItem('user') || 'Unknown Guard';
-            addLog('alert', 'System', `No check-in response from ${user}`);
-          }
-        }
-      ]
-    );
-  }
+  function promptCheckIn(seconds) {
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0'; modal.style.left = '0';
+    modal.style.width = '100%'; modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.zIndex = '9999';
 
-  // --- Load logs from localStorage and Firebase ---
-  function loadLogs(){
-    let localData = localStorage.getItem('logs');
-    if(localData){
-      try{
-        logs = JSON.parse(localData);
-      }catch(e){
-        logs = [];
-      }
-    } else {
-      logs = [];
-    }
+    let remaining = seconds;
+    const box = document.createElement('div');
+    box.style.background = '#fff';
+    box.style.padding = '20px';
+    box.style.borderRadius = '12px';
+    box.style.textAlign = 'center';
+    box.style.maxWidth = '300px';
+    box.style.fontSize = '16px';
+    box.style.color = '#222';
+    box.innerHTML = `
+      <p>Check-in required! Are you OK?</p>
+      <p>Auto-escalation in <span id="countdown">${remaining}</span> seconds</p>
+      <button id="btnYes">Yes</button>
+      <button id="btnNo" style="margin-left: 12px;">No</button>
+    `;
 
-    // Listen for Firebase updates and merge
-    logsRef.on('value', snapshot => {
-      const remoteLogs = snapshot.val();
-      if(remoteLogs && Array.isArray(remoteLogs)){
-        // Merge unique entries by ts+user+text to avoid duplicates
-        const existingKeys = new Set(logs.map(l => l.ts + l.user + l.text));
-        remoteLogs.forEach(l => {
-          if(!existingKeys.has(l.ts + l.user + l.text)){
-            logs.unshift(l);
-          }
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+
+    const countdownEl = box.querySelector('#countdown');
+    const interval = setInterval(() => {
+      remaining--;
+      countdownEl.textContent = remaining;
+      if(remaining <= 0){
+        clearInterval(interval);
+        document.body.removeChild(modal);
+        logEvent({
+          type: 'panic',
+          user: currentUser,
+          location: 'No response to check-in',
+          ts: new Date().toISOString()
         });
-        // Keep logs sorted by timestamp descending, limit to 200 logs max
-        logs.sort((a,b) => new Date(b.ts) - new Date(a.ts));
-        if(logs.length > 200) logs.length = 200;
-        saveLogs();
-        // Refresh screen if message board open
-        if(screenStack.length && screenStack[screenStack.length-1] === messageScreen){
-          renderMessages();
-        }
-        if(screenStack.length && screenStack[screenStack.length-1] === reportScreen){
-          reportScreen(); // reload reports
-        }
-        if(screenStack.length && screenStack[screenStack.length-1] === statusScreen){
-          statusScreen();
-        }
+        notify('Check-in failed! Panic alert auto-sent.');
+        startCheckInTimer();
       }
-    });
+    }, 1000);
+
+    box.querySelector('#btnYes').onclick = () => {
+      clearInterval(interval);
+      document.body.removeChild(modal);
+      notify('Check-in OK received.');
+      startCheckInTimer();
+    };
+    box.querySelector('#btnNo').onclick = () => {
+      clearInterval(interval);
+      document.body.removeChild(modal);
+      logEvent({
+        type: 'panic',
+        user: currentUser,
+        location: 'Check-in failed (No)',
+        ts: new Date().toISOString()
+      });
+      notify('Check-in NO received! Panic alert sent.');
+      startCheckInTimer();
+    };
   }
 
-  // --- Load user and start app ---
-  function startApp(){
-    const user = localStorage.getItem('user');
-    if(!user){
-      screenStack = [];
+  function updateClock(){
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2,'0');
+    const m = now.getMinutes().toString().padStart(2,'0');
+    document.getElementById('statusTime').textContent = `${h}:${m}`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function init(){
+    loadLocal();
+    loadLogsLocal();
+    loadGuardsLocal();
+    if(!currentUser){
       showScreen(loginScreen);
     } else {
-      screenStack = [];
       showScreen(homeScreen);
+      startCheckInTimer();
     }
   }
 
-  // --- Button handlers ---
-  btnBack.onclick = () => {
-    if(screenStack.length > 1){
-      goBack();
-    }
-  };
-  btnHome.onclick = () => {
-    goHome();
-  };
-  btnMenu.onclick = () => {
-    // For future menu, currently no-op
-    notify("Menu button pressed (no menu implemented)");
-  };
-
-  // --- URL reset param handler ---
-  function checkReset(){
-    const params = new URLSearchParams(window.location.search);
-    if(params.get('reset') === 'true'){
-      localStorage.clear();
-      location.href = window.location.pathname;
-    }
-  }
-
-  // --- Initialize ---
-  checkReset();
-  loadLogs();
-  startApp();
-  scheduleAlarms();
-  scheduleCheckIn();
-
+  init();
 })();
 </script>
-
 </body>
 </html>
