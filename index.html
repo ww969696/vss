@@ -98,318 +98,491 @@
       margin-bottom: 10px;
       border-radius: 4px;
     }
+
+    /* Modal System */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal {
+      background: #222;
+      color: #fff;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 0 10px #000;
+    }
+    .modal button {
+      margin: 10px 5px 0;
+    }
   </style>
 </head>
 <body>
-  <div class="status-bar">
+    <div class="status-bar">
     <span id="time">--:--</span>
     <span>🔋 100%</span>
   </div>
-  <div id="panicBanner" class="panic-banner" style="display:none;">🚨 GUARD IN PANIC MODE — ACTION REQUIRED</div>
+
+  <div id="panicBanner" class="panic-banner" style="display:none;">
+    🚨 GUARD IN PANIC MODE — ACTION REQUIRED
+  </div>
+
   <div id="app" class="content">Loading...</div>
+
   <div class="nav-bar">
     <button id="btnBack">◀</button>
     <button id="btnHome">🏠</button>
     <button id="btnMenu">☰</button>
   </div>
+
   <div class="overlay" id="flashOverlay"></div>
+
+  <!-- In-app Modal -->
+  <div id="modalBackdrop" class="modal-backdrop" style="display:none;">
+    <div class="modal" id="modalBox">
+      <div id="modalMessage">...</div>
+      <input id="modalInput" style="display:none;" />
+      <div>
+        <button id="modalConfirm">OK</button>
+        <button id="modalCancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Config -->
   <script src="firebase-config.js"></script>
-<script>
-firebase.initializeApp(firebaseConfig);
+  <script>
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
 
-let currentUser = "";
-let currentStatus = "Active";
-let currentScreen = "login";
-let screenStack = [];
+  let currentUser = "";
+  let currentStatus = "Active";
+  let currentScreen = "login";
+  let screenStack = [];
 
-const app = document.getElementById("app");
-const panicBanner = document.getElementById("panicBanner");
-const flashOverlay = document.getElementById("flashOverlay");
-const checkInInterval = 5 * 60 * 1000; // 5 minutes
+  const app = document.getElementById("app");
+  const panicBanner = document.getElementById("panicBanner");
+  const flashOverlay = document.getElementById("flashOverlay");
+  const modalBackdrop = document.getElementById("modalBackdrop");
+  const modalMessage = document.getElementById("modalMessage");
+  const modalInput = document.getElementById("modalInput");
+  const modalConfirm = document.getElementById("modalConfirm");
+  const modalCancel = document.getElementById("modalCancel");
 
-function now() {
-  return new Date().toLocaleString();
-}
+  const checkInInterval = 5 * 60 * 1000; // 5 minutes
 
-function showScreen(html) {
-  app.innerHTML = html;
-}
+  // Firebase references
+  const db = firebase.database();
+  const logsRef = db.ref("logs");
+  const guardsRef = db.ref("guards");
 
-function goHome() {
-  screenStack = [];
-  homeScreen();
-}
-
-function goBack() {
-  if (screenStack.length > 0) {
-    const prev = screenStack.pop();
-    prev();
+  // Utility: get current timestamp
+  function now() {
+    return new Date().toLocaleString();
   }
-}
 
-function pushScreen(fn) {
-  screenStack.push(fn);
-}
+  // Screen management
+  function showScreen(html) {
+    app.innerHTML = html;
+  }
 
-document.getElementById("btnHome").onclick = goHome;
-document.getElementById("btnBack").onclick = goBack;
-document.getElementById("btnMenu").onclick = () => homeScreen();
+  function goHome() {
+    screenStack = [];
+    homeScreen();
+  }
 
-setInterval(() => {
-  document.getElementById("time").innerText = new Date().toLocaleTimeString();
-}, 1000);
-  function loginScreen() {
-  showScreen(`
-    <h2>Welcome to VSS</h2>
-    <p>Enter your name:</p>
-    <input id="loginName" placeholder="Guard Name" />
-    <button onclick="handleLogin()">Login</button>
-  `);
-}
-
-function handleLogin() {
-  const name = document.getElementById("loginName").value.trim();
-  if (!name) return alert("Enter a name.");
-  currentUser = name;
-  guardsRef.child(name).set({
-    status: "Active",
-    lastSeen: now(),
-    location: "Logged In"
-  });
-  homeScreen();
-}
-
-function homeScreen() {
-  currentScreen = "home";
-  showScreen(`
-    <h2>Main Menu</h2>
-    <button onclick="patrolScreen()">🚶 Patrol</button>
-    <button onclick="reportScreen()">📝 Submit Report</button>
-    <button onclick="messageScreen()">📋 Message Board</button>
-    <button onclick="triggerPanic()">🚨 Panic</button>
-    <button onclick="statusScreen()">🧍 Set Status</button>
-  `);
-}
-
-function patrolScreen() {
-  pushScreen(homeScreen);
-  showScreen(`
-    <h3>Patrol</h3>
-    <label>Location:</label>
-    <select id="site">
-      <option value="VGH">Vancouver General Hospital</option>
-      <option value="PowerPlant">Vancouver Power Plant</option>
-      <option value="FamilyJewels">Family Jewels Outlet</option>
-      <option value="TD">TD Bank</option>
-      <option value="GasGo">Gas & Go</option>
-      <option value="ThreeGuys">Three Guys Corp</option>
-      <option value="Fortis">Fortis Gas Depot</option>
-      <option value="CanadaPost">Canada Post</option>
-      <option value="LakeHOA">Lake View HOA</option>
-      <option value="MapleBIA">Maple Street BIA</option>
-    </select>
-    <label>Route:</label>
-    <select id="route">
-      <option value="Outdoor">Outdoor</option>
-      <option value="Indoor">Indoor</option>
-    </select>
-    <button onclick="scanTag()">📍 Scan Tag</button>
-  `);
-}
-
-function scanTag() {
-  const site = document.getElementById("site").value;
-  const route = document.getElementById("route").value;
-  const tag = prompt("Enter tag number (1-10)");
-  if (!tag) return;
-
-  const entry = {
-    type: "scan",
-    user: currentUser,
-    site,
-    route,
-    tag,
-    time: now()
-  };
-  logsRef.push(entry);
-  alert("Tag scanned successfully.");
-}
-  function reportScreen() {
-  pushScreen(homeScreen);
-  showScreen(`
-    <h3>Submit Report</h3>
-    <label>Type:</label>
-    <select id="reportType">
-      <option value="Hazard">Hazard</option>
-      <option value="Incident">Incident</option>
-      <option value="Maintenance">Maintenance</option>
-      <option value="Other">Other</option>
-    </select>
-    <label>Description:</label>
-    <textarea id="reportDesc" rows="4" placeholder="What happened?"></textarea>
-    <button onclick="submitReport()">Submit</button>
-  `);
-}
-
-function submitReport() {
-  const type = document.getElementById("reportType").value;
-  const desc = document.getElementById("reportDesc").value.trim();
-  if (!desc) return alert("Please provide a description.");
-
-  const entry = {
-    type: "report",
-    user: currentUser,
-    reportType: type,
-    description: desc,
-    time: now()
-  };
-  logsRef.push(entry);
-  alert("Report submitted.");
-  goHome();
-}
-
-function messageScreen() {
-  pushScreen(homeScreen);
-  logsRef.once("value", snap => {
-    let html = `<h3>Message Board</h3>`;
-    const entries = snap.val();
-    for (let key in entries) {
-      const e = entries[key];
-      html += `<div class="entry">
-        <strong>${e.user}</strong>: ${e.type === "scan" ? `scanned Tag ${e.tag} at ${e.site} (${e.route})` : 
-        e.type === "report" ? `submitted a ${e.reportType} report: "${e.description}"` :
-        e.type === "panic" ? `🚨 PANIC issued from ${e.location}` :
-        e.type === "checkin" ? `✅ Responded to check-in` : "Unknown"}
-        <div class="ts">${e.time}</div>
-      </div>`;
+  function goBack() {
+    if (screenStack.length > 0) {
+      const prev = screenStack.pop();
+      prev();
     }
-    showScreen(html);
-  });
-}
+  }
 
-function triggerPanic() {
-  const location = prompt("Enter your current location:");
-  flashOverlay.style.display = "block";
-  setTimeout(() => flashOverlay.style.display = "none", 1500);
+  function pushScreen(fn) {
+    screenStack.push(fn);
+  }
 
-  const entry = {
-    type: "panic",
-    user: currentUser,
-    location,
-    time: now()
-  };
-  logsRef.push(entry);
-  guardsRef.child(currentUser).update({ status: "Panic", lastSeen: now(), location });
+  document.getElementById("btnHome").onclick = goHome;
+  document.getElementById("btnBack").onclick = goBack;
+  document.getElementById("btnMenu").onclick = () => homeScreen();
 
-  panicBanner.style.display = "block";
-}
-
-function statusScreen() {
-  pushScreen(homeScreen);
-  showScreen(`
-    <h3>Set Status</h3>
-    <select id="statusSelect">
-      <option value="Active">Active</option>
-      <option value="Armoured Transport">Armoured Transport</option>
-      <option value="Break">Break</option>
-    </select>
-    <label>Location:</label>
-    <input id="statusLoc" placeholder="Where are you?" />
-    <button onclick="updateStatus()">Update</button>
-  `);
-}
-
-function updateStatus() {
-  const status = document.getElementById("statusSelect").value;
-  const location = document.getElementById("statusLoc").value.trim();
-  currentStatus = status;
-  guardsRef.child(currentUser).update({
-    status,
-    lastSeen: now(),
-    location
-  });
-  if (status !== "Panic") panicBanner.style.display = "none";
-  alert("Status updated.");
-  goHome();
-}
-  // Simulated random alarms
-const simulatedAlarms = [
-  "Suspicious customer reported near entrance.",
-  "Residential alarm triggered at back lot.",
-  "Loitering near fence line.",
-  "Loud noise reported in parking structure.",
-  "Unauthorized person near restricted zone."
-];
-
-function simulateAlarm() {
-  const msg = simulatedAlarms[Math.floor(Math.random() * simulatedAlarms.length)];
-  const entry = {
-    type: "alarm",
-    user: "System",
-    description: msg,
-    time: now()
-  };
-  logsRef.push(entry);
-  inAppNotify("🚨 " + msg);
-}
-
-// Check-in every 5 minutes
-function startCheckInCycle() {
+  // Clock update
   setInterval(() => {
-    const checkTime = Date.now();
-    const promptId = "check_" + checkTime;
-    inAppNotify("Check-in required. Tap below to confirm.", "✅ Check In", () => {
-      const entry = {
-        type: "checkin",
-        user: currentUser,
-        time: now()
-      };
-      logsRef.push(entry);
-    });
+    document.getElementById("time").innerText = new Date().toLocaleTimeString();
+  }, 1000);
 
-    setTimeout(() => {
-      if (currentStatus !== "Panic") {
+  // --- Modal system ---
+
+  let modalResolve = null;
+
+  function showModal(message, options = {}) {
+    /*
+      options:
+        input: { placeholder: string, value: string }
+        buttons: [{ text: string, value: any }]
+    */
+    return new Promise((resolve) => {
+      modalMessage.textContent = message;
+      modalInput.style.display = "none";
+      modalInput.value = "";
+      modalInput.placeholder = "";
+      modalConfirm.style.display = "inline-block";
+      modalCancel.style.display = "inline-block";
+      modalConfirm.textContent = "OK";
+      modalCancel.textContent = "Cancel";
+
+      if (options.input) {
+        modalInput.style.display = "block";
+        modalInput.placeholder = options.input.placeholder || "";
+        modalInput.value = options.input.value || "";
+        modalInput.focus();
+      }
+
+      if (options.buttons && Array.isArray(options.buttons)) {
+        // Clear old buttons
+        const btnContainer = modalConfirm.parentNode;
+        btnContainer.innerHTML = "";
+        options.buttons.forEach((btn, i) => {
+          const b = document.createElement("button");
+          b.textContent = btn.text;
+          b.onclick = () => {
+            modalBackdrop.style.display = "none";
+            resolve(btn.value);
+          };
+          btnContainer.appendChild(b);
+        });
+      } else {
+        // Default OK/Cancel buttons
+        modalConfirm.onclick = () => {
+          modalBackdrop.style.display = "none";
+          if (options.input) {
+            resolve(modalInput.value.trim());
+          } else {
+            resolve(true);
+          }
+        };
+        modalCancel.onclick = () => {
+          modalBackdrop.style.display = "none";
+          resolve(null);
+        };
+      }
+
+      modalBackdrop.style.display = "flex";
+    });
+  }
+
+  // --- Screens ---
+
+  function loginScreen() {
+    currentScreen = "login";
+    showScreen(`
+      <h2>Welcome to VSS</h2>
+      <p>Enter your name:</p>
+      <input id="loginName" placeholder="Guard Name" autocomplete="off" />
+      <button id="loginBtn">Login</button>
+    `);
+    document.getElementById("loginBtn").onclick = handleLogin;
+  }
+
+  async function handleLogin() {
+    const name = document.getElementById("loginName").value.trim();
+    if (!name) {
+      await showModal("Please enter your guard name.");
+      return;
+    }
+    currentUser = name;
+    await guardsRef.child(name).set({
+      status: "Active",
+      lastSeen: now(),
+      location: "Logged In"
+    });
+    homeScreen();
+  }
+
+  function homeScreen() {
+    currentScreen = "home";
+    showScreen(`
+      <h2>Main Menu</h2>
+      <button id="btnPatrol">🚶 Patrol</button>
+      <button id="btnReport">📝 Submit Report</button>
+      <button id="btnMessages">📋 Message Board</button>
+      <button id="btnPanic">🚨 Panic</button>
+      <button id="btnStatus">🧍 Set Status</button>
+    `);
+    document.getElementById("btnPatrol").onclick = patrolScreen;
+    document.getElementById("btnReport").onclick = reportScreen;
+    document.getElementById("btnMessages").onclick = messageScreen;
+    document.getElementById("btnPanic").onclick = triggerPanic;
+    document.getElementById("btnStatus").onclick = statusScreen;
+  }
+
+  function patrolScreen() {
+    pushScreen(homeScreen);
+    showScreen(`
+      <h3>Patrol</h3>
+      <label>Location:</label>
+      <select id="site">
+        <option value="VGH">Vancouver General Hospital</option>
+        <option value="PowerPlant">Vancouver Power Plant</option>
+        <option value="FamilyJewels">Family Jewels Outlet</option>
+        <option value="TD">TD Bank</option>
+        <option value="GasGo">Gas & Go</option>
+        <option value="ThreeGuys">Three Guys Corp</option>
+        <option value="Fortis">Fortis Gas Depot</option>
+        <option value="CanadaPost">Canada Post</option>
+        <option value="LakeHOA">Lake View HOA</option>
+        <option value="MapleBIA">Maple Street BIA</option>
+      </select>
+      <label>Route:</label>
+      <select id="route">
+        <option value="Outdoor">Outdoor</option>
+        <option value="Indoor">Indoor</option>
+      </select>
+      <button id="btnScan">📍 Scan Tag</button>
+    `);
+    document.getElementById("btnScan").onclick = scanTag;
+  }
+
+  async function scanTag() {
+    const site = document.getElementById("site").value;
+    const route = document.getElementById("route").value;
+    const tag = await showModal("Enter tag number (1-10):", { input: { placeholder: "Tag number" } });
+    if (!tag) return;
+
+    const entry = {
+      type: "scan",
+      user: currentUser,
+      site,
+      route,
+      tag,
+      time: now()
+    };
+    logsRef.push(entry);
+    inAppNotify("Tag scanned successfully.");
+  }
+
+  function reportScreen() {
+    pushScreen(homeScreen);
+    showScreen(`
+      <h3>Submit Report</h3>
+      <label>Type:</label>
+      <select id="reportType">
+        <option value="Hazard">Hazard</option>
+        <option value="Incident">Incident</option>
+        <option value="Maintenance">Maintenance</option>
+        <option value="Other">Other</option>
+      </select>
+      <label>Description:</label>
+      <textarea id="reportDesc" rows="4" placeholder="What happened?"></textarea>
+      <button id="btnSubmitReport">Submit</button>
+    `);
+    document.getElementById("btnSubmitReport").onclick = submitReport;
+  }
+
+  async function submitReport() {
+    const type = document.getElementById("reportType").value;
+    const desc = document.getElementById("reportDesc").value.trim();
+    if (!desc) {
+      await showModal("Please provide a description.");
+      return;
+    }
+
+    const entry = {
+      type: "report",
+      user: currentUser,
+      reportType: type,
+      description: desc,
+      time: now()
+    };
+    logsRef.push(entry);
+    inAppNotify("Report submitted.");
+    goHome();
+  }
+
+  function messageScreen() {
+    pushScreen(homeScreen);
+    logsRef.once("value", snap => {
+      let html = `<h3>Message Board</h3>`;
+      const entries = snap.val();
+      if (!entries) {
+        html += "<p>No messages.</p>";
+        showScreen(html);
+        return;
+      }
+      // Show newest first:
+      const keys = Object.keys(entries).reverse();
+      for (let key of keys) {
+        const e = entries[key];
+        let msgText = "";
+        switch(e.type) {
+          case "scan":
+            msgText = `scanned Tag ${e.tag} at ${e.site} (${e.route})`;
+            break;
+          case "report":
+            msgText = `submitted a ${e.reportType} report: "${e.description}"`;
+            break;
+          case "panic":
+            msgText = `🚨 PANIC issued from ${e.location}`;
+            break;
+          case "checkin":
+            msgText = `✅ Responded to check-in`;
+            break;
+          case "alarm":
+            msgText = `🚨 Alarm: ${e.description}`;
+            break;
+          default:
+            msgText = "Unknown event";
+        }
+        html += `<div class="entry"><strong>${e.user}</strong>: ${msgText}<div class="ts">${e.time}</div></div>`;
+      }
+      showScreen(html);
+    });
+  }
+
+  async function triggerPanic() {
+    const location = await showModal("Enter your current location:");
+    if (!location) return;
+
+    flashOverlay.style.display = "block";
+    setTimeout(() => flashOverlay.style.display = "none", 1500);
+
+    const entry = {
+      type: "panic",
+      user: currentUser,
+      location,
+      time: now()
+    };
+    logsRef.push(entry);
+    await guardsRef.child(currentUser).update({ status: "Panic", lastSeen: now(), location });
+
+    panicBanner.style.display = "block";
+    inAppNotify("🚨 Panic mode activated!");
+  }
+
+  function statusScreen() {
+    pushScreen(homeScreen);
+    showScreen(`
+      <h3>Set Status</h3>
+      <select id="statusSelect">
+        <option value="Active">Active</option>
+        <option value="Armoured Transport">Armoured Transport</option>
+        <option value="Break">Break</option>
+      </select>
+      <label>Location:</label>
+      <input id="statusLoc" placeholder="Where are you?" autocomplete="off" />
+      <button id="btnUpdateStatus">Update</button>
+    `);
+    document.getElementById("btnUpdateStatus").onclick = updateStatus;
+  }
+
+  async function updateStatus() {
+    const status = document.getElementById("statusSelect").value;
+    const location = document.getElementById("statusLoc").value.trim();
+    currentStatus = status;
+    await guardsRef.child(currentUser).update({
+      status,
+      lastSeen: now(),
+      location
+    });
+    if (status !== "Panic") panicBanner.style.display = "none";
+    inAppNotify("Status updated.");
+    goHome();
+  }
+
+  // --- In-app notification helper ---
+
+  function inAppNotify(msg, actionText = null, action = null) {
+    const note = document.createElement("div");
+    note.className = "notify";
+    note.innerHTML = msg;
+    if (actionText && action) {
+      const btn = document.createElement("button");
+      btn.textContent = actionText;
+      btn.style.marginTop = "10px";
+      btn.onclick = () => {
+        action();
+        note.remove();
+      };
+      note.appendChild(btn);
+    }
+    app.prepend(note);
+    setTimeout(() => note.remove(), 10000);
+  }
+
+  // --- Simulated random alarms ---
+
+  const simulatedAlarms = [
+    "Suspicious customer reported near entrance.",
+    "Residential alarm triggered at back lot.",
+    "Loitering near fence line.",
+    "Loud noise reported in parking structure.",
+    "Unauthorized person near restricted zone."
+  ];
+
+  function simulateAlarm() {
+    const msg = simulatedAlarms[Math.floor(Math.random() * simulatedAlarms.length)];
+    const entry = {
+      type: "alarm",
+      user: "System",
+      description: msg,
+      time: now()
+    };
+    logsRef.push(entry);
+    inAppNotify("🚨 " + msg);
+  }
+
+  // --- Check-in every 5 minutes with escalation ---
+
+  function startCheckInCycle() {
+    setInterval(async () => {
+      if (!currentUser || currentStatus === "Panic") return; // skip if no user or already panicked
+
+      let responded = false;
+
+      inAppNotify("Check-in required. Tap below to confirm.", "✅ Check In", () => {
+        responded = true;
+        const entry = {
+          type: "checkin",
+          user: currentUser,
+          time: now()
+        };
+        logsRef.push(entry);
+      });
+
+      // Wait 60 seconds, then escalate if no response
+      await new Promise(resolve => setTimeout(resolve, 60000));
+      if (!responded) {
         triggerPanic();
       }
-    }, 60000); // escalate after 1 minute
-  }, checkInInterval);
-}
-
-// In-app notification helper
-function inAppNotify(msg, actionText = null, action = null) {
-  const note = document.createElement("div");
-  note.className = "notify";
-  note.innerHTML = msg;
-  if (actionText && action) {
-    const btn = document.createElement("button");
-    btn.textContent = actionText;
-    btn.style.marginTop = "10px";
-    btn.onclick = () => {
-      action();
-      note.remove();
-    };
-    note.appendChild(btn);
+    }, checkInInterval);
   }
-  app.prepend(note);
-  setTimeout(() => note.remove(), 10000);
-}
 
-// Reset system via URL param
-function checkReset() {
-  const url = new URL(window.location.href);
-  if (url.searchParams.get("reset") === "true") {
-    logsRef.remove();
-    alert("All logs cleared.");
+  // --- Reset system via URL param ---
+
+  function checkReset() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("reset") === "true") {
+      logsRef.remove();
+      guardsRef.remove();
+      alert("All logs and guard statuses cleared.");
+    }
   }
-}
 
-// Run on load
-window.onload = () => {
-  loginScreen();
-  checkReset();
-  setInterval(simulateAlarm, Math.random() * 180000 + 180000); // every 3–6 min
-  startCheckInCycle();
-};
+  // --- Initialize on load ---
+
+  window.onload = () => {
+    loginScreen();
+    checkReset();
+    // simulate alarms every 3-6 minutes randomly
+    setInterval(simulateAlarm, Math.random() * 180000 + 180000);
+    startCheckInCycle();
+  };
 </script>
-</body>
-</html>
