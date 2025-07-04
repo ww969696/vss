@@ -2,329 +2,338 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>Hospital Patrol App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RP Security Patrol App</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #e0f2f1;
-      color: #004d40;
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0; padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background: #00796b;
+      color: white;
       display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      justify-content: center;
+      align-items: center;
     }
     #app {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      max-width: 480px;
-      margin: 0 auto;
-      background: white;
-      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      background: #004d40;
+      padding: 2rem;
       border-radius: 12px;
-      overflow: hidden;
+      width: 320px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       position: relative;
     }
-    header {
-      background: #00796b;
-      color: white;
-      padding: 1rem;
-      font-weight: 700;
-      font-size: 1.25rem;
-      text-align: center;
-    }
-    main {
-      padding: 1rem;
-      overflow-y: auto;
-      flex: 1;
-    }
-    h2 {
+    h1 {
       margin-top: 0;
-      margin-bottom: 0.5rem;
-      color: #004d40;
-    }
-    ol {
-      padding-left: 1.25rem;
+      text-align: center;
       margin-bottom: 1.5rem;
     }
-    .progress-container {
-      background: #ddd;
-      border-radius: 12px;
-      overflow: hidden;
-      height: 22px;
-      margin-bottom: 0.5rem;
-    }
-    .progress-bar {
-      background: #4caf50;
-      height: 100%;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-    .progress-text {
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .button {
+    label {
       display: block;
-      width: 100%;
-      padding: 1.1rem;
-      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
       font-weight: 600;
-      color: white;
-      background: #00796b;
-      border: none;
-      border-radius: 9999px;
-      cursor: pointer;
-      margin-bottom: 1rem;
-      box-shadow: 0 3px 6px rgba(0,121,107,0.4);
     }
-    .button:active {
+    input, select, button, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+    input {
+      outline: none;
+    }
+    button {
+      background: #26a69a;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
       background: #004d40;
     }
-    footer {
+    #errorMessage {
+      color: #ffbaba;
+      font-weight: 600;
       text-align: center;
-      font-size: 0.9rem;
-      color: #666;
-      padding: 0.5rem;
-      background: #f0f0f0;
-    }
-
-    /* Modal */
-    #modal, #hazardModal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.4);
+      margin-bottom: 1rem;
       display: none;
+    }
+    /* Modal styles */
+    #modalOverlay {
+      position: fixed;
+      top: 0; left: 0; right:0; bottom:0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      padding: 1rem;
     }
-    #modal.active, #hazardModal.active {
-      display: flex;
-    }
-    .modal-content {
-      background: white;
+    #modal {
+      background: #004d40;
+      padding: 1.5rem;
       border-radius: 12px;
-      max-width: 320px;
-      width: 100%;
-      padding: 1.25rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      width: 280px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
       text-align: center;
     }
-    .tag-option {
-      background: #00796b;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem;
-      margin: 0.3rem 0;
-      font-size: 1.05rem;
-      width: 100%;
-      cursor: pointer;
+    #modal h2 {
+      margin-top: 0;
     }
-    .tag-option:hover {
-      background: #004d40;
-    }
-    #closeModal, #cancelHazard {
+    #modal button {
       margin-top: 1rem;
-      background: #ccc;
-      color: #444;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      font-weight: bold;
-    }
-
-    /* Hazard board */
-    #hazardBoard {
-      margin-top: 1rem;
-    }
-    .hazard {
-      background: #fefefe;
-      border-left: 4px solid #f44336;
-      padding: 0.75rem 1rem;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
-      position: relative;
-    }
-    .hazard button {
-      position: absolute;
-      right: 10px;
-      top: 8px;
-      background: none;
-      border: none;
-      font-size: 1.1rem;
-      color: #888;
-      cursor: pointer;
-    }
-    #clearAll {
-      background: #e53935;
-      color: white;
-      font-weight: bold;
-      font-size: 0.95rem;
-      border: none;
-      padding: 0.5rem;
-      border-radius: 8px;
-      margin-top: 0.5rem;
-      cursor: pointer;
-      width: 100%;
     }
   </style>
 </head>
 <body>
-  <div id="app">
-    <header>Hospital Outdoor Patrol</header>
-    <main>
-      <h2>Site Post Orders</h2>
-      <ol>
-        <li>Check perimeter fence for breaches or damage.</li>
-        <li>Ensure emergency exits are clear.</li>
-        <li>Inspect lighting fixtures and report outages.</li>
-        <li>Check delivery entrances are locked.</li>
-        <li>Monitor parking lot for suspicious activity.</li>
-      </ol>
+  <div id="app" role="main" aria-label="RP Security Patrol App"></div>
 
-      <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
-      <div class="progress-text" id="progressText">0 / 5 tags scanned</div>
-
-      <button class="button" id="scanButton">Scan Tag</button>
-      <button class="button" id="hazardButton">Report Hazard</button>
-
-      <div id="hazardBoard">
-        <h2>Hazard Reports</h2>
-        <div id="hazardList"></div>
-        <button id="clearAll" style="display:none;">Clear All</button>
-      </div>
-    </main>
-    <footer>RP Security Dept &mdash; Patrol App</footer>
-  </div>
-
-  <!-- Tag Modal -->
-  <div id="modal">
-    <div class="modal-content">
-      <h3>Simulate Tag Scan</h3>
-      <p>Select the tag number you scanned:</p>
-      <button class="tag-option" data-tag="1">Tag 1</button>
-      <button class="tag-option" data-tag="2">Tag 2</button>
-      <button class="tag-option" data-tag="3">Tag 3</button>
-      <button class="tag-option" data-tag="4">Tag 4</button>
-      <button class="tag-option" data-tag="5">Tag 5</button>
-      <button id="closeModal">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Hazard Modal -->
-  <div id="hazardModal">
-    <div class="modal-content">
-      <h3>Report Hazard</h3>
-      <textarea id="hazardInput" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px;"></textarea>
-      <button class="button" style="margin-top: 1rem;" id="submitHazard">Submit</button>
-      <button id="cancelHazard">Cancel</button>
+  <div id="modalOverlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modal">
+      <!-- Dynamic modal content -->
     </div>
   </div>
 
   <script>
-    // Patrol progress
-    const totalTags = 5;
-    let scannedTags = new Set();
-
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const scanButton = document.getElementById('scanButton');
+    const app = document.getElementById('app');
+    const modalOverlay = document.getElementById('modalOverlay');
     const modal = document.getElementById('modal');
-    const closeModalBtn = document.getElementById('closeModal');
-    const tagOptions = document.querySelectorAll('.tag-option');
 
-    function updateProgress() {
-      const count = scannedTags.size;
-      const percent = (count / totalTags) * 100;
-      progressBar.style.width = percent + '%';
-      progressText.textContent = `${count} / ${totalTags} tags scanned`;
-      if (count === totalTags) {
-        alert("Patrol Complete!");
-      }
+    // Helper to get/set localStorage
+    function setStorage(key, val) {
+      localStorage.setItem(key, JSON.stringify(val));
+    }
+    function getStorage(key) {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : null;
+    }
+    function clearStorage() {
+      localStorage.clear();
     }
 
-    scanButton.addEventListener('click', () => modal.classList.add('active'));
-    closeModalBtn.addEventListener('click', () => modal.classList.remove('active'));
-    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+    // --- Login Screen ---
+    function showLogin() {
+      app.innerHTML = `
+        <h1>Guard Login</h1>
+        <div id="errorMessage" role="alert" aria-live="assertive"></div>
+        <form id="loginForm" autocomplete="off">
+          <input id="username" name="username" type="text" placeholder="Enter guard name or ID" required aria-required="true" />
+          <button type="submit">Log In</button>
+        </form>
+      `;
 
-    tagOptions.forEach(button => {
-      button.addEventListener('click', () => {
-        const tag = button.getAttribute('data-tag');
-        if (!scannedTags.has(tag)) {
-          scannedTags.add(tag);
-          updateProgress();
-        } else {
-          alert("Tag already scanned.");
+      const loginForm = document.getElementById('loginForm');
+      const usernameInput = document.getElementById('username');
+      const errorMessage = document.getElementById('errorMessage');
+
+      loginForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const username = usernameInput.value.trim();
+        if (!username) {
+          errorMessage.textContent = "Please enter your guard name or ID.";
+          errorMessage.style.display = 'block';
+          return;
         }
-        modal.classList.remove('active');
+        errorMessage.style.display = 'none';
+        // Simulate delay
+        setTimeout(() => {
+          setStorage('guardUsername', username);
+          showMainMenu();
+        }, 600);
       });
-    });
-
-    updateProgress();
-
-    // Hazard system
-    const hazardModal = document.getElementById('hazardModal');
-    const hazardButton = document.getElementById('hazardButton');
-    const submitHazard = document.getElementById('submitHazard');
-    const cancelHazard = document.getElementById('cancelHazard');
-    const hazardInput = document.getElementById('hazardInput');
-    const hazardList = document.getElementById('hazardList');
-    const clearAllBtn = document.getElementById('clearAll');
-
-    hazardButton.addEventListener('click', () => {
-      hazardModal.classList.add('active');
-      hazardInput.value = '';
-      hazardInput.focus();
-    });
-    cancelHazard.addEventListener('click', () => hazardModal.classList.remove('active'));
-    hazardModal.addEventListener('click', e => { if (e.target === hazardModal) hazardModal.classList.remove('active'); });
-
-    function renderHazards() {
-      hazardList.innerHTML = '';
-      hazardReports.forEach((msg, index) => {
-        const div = document.createElement('div');
-        div.className = 'hazard';
-        div.innerHTML = `${msg}<button onclick="deleteHazard(${index})">🗑</button>`;
-        hazardList.appendChild(div);
-      });
-      clearAllBtn.style.display = hazardReports.length > 0 ? 'block' : 'none';
     }
 
-    let hazardReports = [];
+    // --- Main Menu ---
+    function showMainMenu() {
+      const username = getStorage('guardUsername');
+      app.innerHTML = `
+        <h1>Welcome, ${username}</h1>
+        <form id="mainMenuForm" autocomplete="off">
+          <label for="locationSelect">Select Location:</label>
+          <select id="locationSelect" required aria-required="true" aria-label="Location selector">
+            <option value="" disabled selected>Choose a location</option>
+            <option value="P404">Vancouver General Hospital</option>
+            <option value="P306">Vancouver Power Plant</option>
+            <option value="P403">Family Jewels & Gadget Store</option>
+            <option value="P205">Toronto Dominion Bank</option>
+            <option value="P1110,P200,P602">Gas & Go Franchise (multiple locations)</option>
+            <option value="P217,P300">Three Guys Corporation (Restaurant & Warehouse)</option>
+            <option value="P307">Fortis BC Vancouver Gas Depot</option>
+            <option value="P308">Canada Post Corporation</option>
+            <option value="P904,P905,P906,P907">Lake View HOA</option>
+            <option value="P1104,P1105,P1107,P1108">Maple Street BIA</option>
+          </select>
 
-    function deleteHazard(index) {
-      hazardReports.splice(index, 1);
-      renderHazards();
+          <label for="patrolType">Select Patrol Type:</label>
+          <select id="patrolType" required aria-required="true" aria-label="Patrol type selector">
+            <option value="" disabled selected>Choose patrol type</option>
+            <option value="outdoor">Outdoor Patrol</option>
+            <option value="indoor">Indoor Patrol</option>
+          </select>
+
+          <button type="submit">Start Patrol</button>
+        </form>
+        <button id="logoutBtn" style="background:#c62828; margin-top:1rem;">Log Out</button>
+      `;
+
+      document.getElementById('mainMenuForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const location = document.getElementById('locationSelect').value;
+        const patrolType = document.getElementById('patrolType').value;
+        if (!location || !patrolType) {
+          alert('Please select both location and patrol type.');
+          return;
+        }
+        setStorage('selectedLocation', location);
+        setStorage('selectedPatrolType', patrolType);
+        showPatrolScreen(location, patrolType);
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        clearStorage();
+        showLogin();
+      });
     }
 
-    submitHazard.addEventListener('click', () => {
-      const msg = hazardInput.value.trim();
-      if (msg) {
-        hazardReports.push(msg);
-        renderHazards();
-        hazardModal.classList.remove('active');
+    // --- Patrol Screen ---
+    let alarmTimeoutId = null;
+    let reportLog = [];
+
+    const alarmMessages = [
+      "Door alarm triggered at North Wing",
+      "Motion detected near Loading Dock",
+      "Suspicious individual reported at Parking Lot",
+      "Fire alarm test in progress at Main Lobby",
+      "Equipment malfunction reported at Power Plant",
+      "Unauthorized access attempt at Server Room",
+      "Vehicle alarm activated at Gate 3",
+      "Security camera offline at East Corridor",
+    ];
+
+    function scheduleNextAlarm() {
+      // Random interval between 3 to 7 minutes (in ms)
+      const interval = (3 + Math.random() * 4) * 60 * 1000;
+      alarmTimeoutId = setTimeout(() => {
+        showAlarmPopup();
+        scheduleNextAlarm();
+      }, interval);
+    }
+
+    function showAlarmPopup() {
+      const msg = alarmMessages[Math.floor(Math.random() * alarmMessages.length)];
+      showModal(`
+        <h2 id="modalTitle">ALERT</h2>
+        <p>${msg}</p>
+        <button id="ackAlarmBtn">Acknowledge</button>
+      `);
+
+      document.getElementById('ackAlarmBtn').addEventListener('click', () => {
+        hideModal();
+      });
+    }
+
+    function showModal(htmlContent) {
+      modal.innerHTML = htmlContent;
+      modalOverlay.style.display = 'flex';
+      // Focus first button or input
+      const focusable = modal.querySelector('button, input, select, textarea');
+      if (focusable) focusable.focus();
+    }
+
+    function hideModal() {
+      modalOverlay.style.display = 'none';
+    }
+
+    // Report form HTML
+    function showReportForm() {
+      showModal(`
+        <h2 id="modalTitle">Report to City</h2>
+        <form id="reportForm">
+          <label for="reportType">Type of Report:</label>
+          <select id="reportType" required aria-required="true">
+            <option value="" disabled selected>Select a report type</option>
+            <option value="vandalism">Vandalism</option>
+            <option value="hazard">Hazard</option>
+            <option value="suspicious">Suspicious Activity</option>
+            <option value="other">Other</option>
+          </select>
+          <label for="reportDetails">Details:</label>
+          <textarea id="reportDetails" rows="4" placeholder="Describe the incident..." required aria-required="true"></textarea>
+          <button type="submit">Submit Report</button>
+          <button type="button" id="cancelReportBtn" style="background:#c62828; margin-top:0.5rem;">Cancel</button>
+        </form>
+      `);
+
+      const reportForm = document.getElementById('reportForm');
+      reportForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const type = document.getElementById('reportType').value;
+        const details = document.getElementById('reportDetails').value.trim();
+        if (!type || !details) {
+          alert('Please fill in all fields.');
+          return;
+        }
+        // Log report locally
+        reportLog.push({
+          time: new Date().toISOString(),
+          type,
+          details,
+        });
+        alert('Report submitted successfully.');
+        hideModal();
+      });
+
+      document.getElementById('cancelReportBtn').addEventListener('click', () => {
+        hideModal();
+      });
+    }
+
+    function showPatrolScreen(location, patrolType) {
+      app.innerHTML = `
+        <h1>Patrol at ${location} (${patrolType})</h1>
+        <p>Patrol features coming soon!</p>
+        <button id="reportBtn">Report to City</button>
+        <button id="backBtn" style="margin-top: 1rem;">Back to Menu</button>
+        <button id="logoutBtn" style="background:#c62828; margin-top: 1rem;">Log Out</button>
+      `;
+
+      // Start scheduling alarms
+      if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
+      scheduleNextAlarm();
+
+      document.getElementById('reportBtn').addEventListener('click', () => {
+        showReportForm();
+      });
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
+        showMainMenu();
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        if (alarmTimeoutId) clearTimeout(alarmTimeoutId);
+        clearStorage();
+        showLogin();
+      });
+    }
+
+    // --- Initial load ---
+    window.onload = () => {
+      const username = getStorage('guardUsername');
+      if (username) {
+        showMainMenu();
       } else {
-        alert("Enter a hazard message.");
+        showLogin();
       }
-    });
-
-    clearAllBtn.addEventListener('click', () => {
-      if (confirm("Clear all hazard reports?")) {
-        hazardReports = [];
-        renderHazards();
-      }
-    });
+    };
   </script>
 </body>
 </html>
