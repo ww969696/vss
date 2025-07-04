@@ -179,11 +179,6 @@
 
   const checkInInterval = 5 * 60 * 1000; // 5 minutes
 
-  // Firebase references
-  const db = firebase.database();
-  const logsRef = db.ref("logs");
-  const guardsRef = db.ref("guards");
-
   // Utility: get current timestamp
   function now() {
     return new Date().toLocaleString();
