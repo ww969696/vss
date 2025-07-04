@@ -265,6 +265,16 @@
     background: #c0d0ff;
     transform: scale(0.98);
   }
+  .delete-btn {
+    background: #ff4444;
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    margin-left: 8px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -336,6 +346,7 @@
   let guards = {};
   let notifications = [];
   let screenStack = [];
+  let messageKeys = {}; // Track Firebase message keys
 
   let alarmTimer = null;
   let checkinTimer = null;
@@ -429,13 +440,16 @@
   btnHome.onclick = () => { goHome(); };
   btnMenu.onclick = () => { showScreen(guardStatusScreen); };
 
+  // Modified to track message keys
   logsRef.on('value', snapshot => {
     const data = snapshot.val();
     logs = [];
+    messageKeys = {};
     if(data) {
-      Object.values(data).forEach(entry => {
+      Object.entries(data).forEach(([key, entry]) => {
         entry.ts = new Date(entry.ts);
         logs.push(entry);
+        messageKeys[key] = true;
       });
       logs.sort((a,b) => b.ts - a.ts);
     }
@@ -549,7 +563,7 @@
       
       [...tagList.children].forEach(btn => {
         btn.onclick = () => {
-          logEvent({
+          const key = logEvent({
             type: 'tagScan',
             user: currentUser,
             site: siteSelect.value,
@@ -693,11 +707,32 @@
               content = JSON.stringify(log);
           }
           
-          return `<div class="${cls}"><div>${content}</div><div class="ts">${timeStr}</div></div>`;
+          // Find the Firebase key for this message
+          const messageKey = Object.keys(messageKeys).find(key => 
+            messageKeys[key] && logsRef.child(key).toString().includes(log.ts.toISOString())
+          );
+          
+          // Add delete button for messages older than 5 minutes
+          const deleteBtn = (now - log.ts > 5 * 60 * 1000 && messageKey) 
+            ? `<button class="delete-btn" data-key="${messageKey}">×</button>` 
+            : '';
+            
+          return `<div class="${cls}"><div>${content}${deleteBtn}</div><div class="ts">${timeStr}</div></div>`;
         });
         
       messageList.innerHTML = items.join('');
       messageList.scrollTop = messageList.scrollHeight;
+      
+      // Add delete handlers
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const key = btn.getAttribute('data-key');
+          if(key && confirm("Delete this message?")) {
+            logsRef.child(key).remove();
+          }
+        };
+      });
     }
 
     renderMessages();
@@ -706,14 +741,15 @@
     if(messageCleanupTimer) clearInterval(messageCleanupTimer);
     messageCleanupTimer = setInterval(() => {
       const now = new Date();
-      const thirtyMinutesAgo = now.getTime() - (30 * 60 * 1000);
+      const cutoff = now.getTime() - (30 * 60 * 1000);
       
-      // Remove messages older than 30 minutes from Firebase
-      logs.forEach(log => {
-        if(log.ts.getTime() < thirtyMinutesAgo) {
-          // In a real app, we would remove the specific message from Firebase
-          // But since we're using push() which generates random keys, we can't easily
-          // reference them here. In a production app, you'd need a different approach.
+      // Find and delete old messages from Firebase
+      logs.forEach((log, index) => {
+        if(log.ts.getTime() < cutoff) {
+          const key = Object.keys(messageKeys)[index];
+          if(key) {
+            logsRef.child(key).remove();
+          }
         }
       });
       
@@ -794,7 +830,9 @@
 
   function logEvent(event) {
     event.ts = new Date(event.ts || new Date()).toISOString();
-    logsRef.push(event);
+    const newRef = logsRef.push();
+    newRef.set(event);
+    return newRef.key; // Return the Firebase push ID
   }
 
   function startCheckInTimer() {
