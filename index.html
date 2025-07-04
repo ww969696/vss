@@ -2,41 +2,154 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Coming Soon</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hospital Outdoor Patrol</title>
   <style>
     body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
       margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      color: #fff;
+      padding: 1rem;
+      background: #f4f9f9;
+      color: #004d40;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      text-align: center;
+      flex-direction: column;
+      min-height: 100vh;
     }
-
-    .container {
-      max-width: 600px;
-    }
-
     h1 {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
+      text-align: center;
+      margin-bottom: 0.2rem;
     }
-
-    p {
-      font-size: 1.2rem;
-      opacity: 0.8;
+    h2 {
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: #00796b;
+    }
+    ol {
+      background: white;
+      padding: 1rem 1.2rem;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .tag-button {
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex: 1 1 120px;
+      max-width: 180px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    .tag-button:active {
+      background: #004d40;
+    }
+    .tag-button.scanned {
+      background: #4caf50;
+      cursor: default;
+      text-decoration: line-through;
+      box-shadow: none;
+    }
+    .progress-container {
+      max-width: 600px;
+      margin: 2rem auto 1rem;
+      background: #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+      height: 22px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .progress-bar {
+      background: #4caf50;
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .progress-text {
+      text-align: center;
+      font-weight: 600;
+      color: #004d40;
+      margin-top: 0.5rem;
+    }
+    footer {
+      margin-top: auto;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
+      padding: 1rem 0 0;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🚧 Coming Soon</h1>
-    <p>This page is under construction. Please check back later.</p>
+  <h1>Hospital Outdoor Patrol</h1>
+
+  <h2>Site Post Orders</h2>
+  <ol>
+    <li>Patrol the perimeter fence and check for any breaches or damage.</li>
+    <li>Verify all emergency exits are clear and operational.</li>
+    <li>Inspect all outdoor lighting fixtures; report any outages.</li>
+    <li>Ensure all delivery and service entrances are secure.</li>
+    <li>Monitor parking lot activity and report any suspicious behavior.</li>
+  </ol>
+
+  <h2>Scan Tags</h2>
+  <div class="tags" id="tagsContainer">
+    <button class="tag-button" data-tag="1">Scan Tag 1</button>
+    <button class="tag-button" data-tag="2">Scan Tag 2</button>
+    <button class="tag-button" data-tag="3">Scan Tag 3</button>
+    <button class="tag-button" data-tag="4">Scan Tag 4</button>
+    <button class="tag-button" data-tag="5">Scan Tag 5</button>
   </div>
+
+  <div class="progress-container" aria-label="Patrol progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-text" id="progressText">0 / 5 tags scanned</div>
+
+  <footer>
+    Simulated Security Patrol App &mdash; RP Security Dept.
+  </footer>
+
+  <script>
+    const tags = document.querySelectorAll('.tag-button');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    let scannedCount = 0;
+    const totalTags = tags.length;
+
+    tags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        if (!tag.classList.contains('scanned')) {
+          tag.classList.add('scanned');
+          scannedCount++;
+          updateProgress();
+        }
+      });
+    });
+
+    function updateProgress() {
+      const percent = (scannedCount / totalTags) * 100;
+      progressBar.style.width = percent + '%';
+      progressText.textContent = `${scannedCount} / ${totalTags} tags scanned`;
+
+      if(scannedCount === totalTags){
+        alert('Patrol Complete! All tags scanned.');
+      }
+    }
+  </script>
 </body>
 </html>
