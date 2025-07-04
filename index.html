@@ -292,6 +292,9 @@
 <script>
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const logsRef = db.ref('logs');
+  const guardsRef = db.ref('guards');
 
   // State variables
   let currentUser = "";
